@@ -54,9 +54,11 @@ async function 載入圖示() {
 }
 
 let w = 1140, h = 920;
+let mx = 5, mn = 0.5;
 function setfoundation() {
-	let fm = Math.min(window.innerWidth / w, window.innerHeight / h, 1);
-	fm = Math.max(fm, 1);
+	let fm = Math.min(window.innerWidth / w, window.innerHeight / h, 5);
+	fm = Math.max(fm, 0.5);
+	fm = Math.floor(fm / 0.5) * 0.5;
 	document.body.style.setProperty('--fm', fm);
 }
 
