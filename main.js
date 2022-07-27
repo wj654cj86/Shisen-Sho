@@ -50,16 +50,7 @@ async function 載入圖示() {
 	ctx.fillStyle = '#f5f5f5';
 	ctx.fill();
 	ctx.drawImage(img, 50, 0);
-	document.querySelector('[rel="icon"]').href = canvas.toDataURL();
-}
-
-let w = 1140, h = 920;
-let mx = 5, mn = 0.5;
-function setfoundation() {
-	let fm = Math.min(window.innerWidth / w, window.innerHeight / h, 5);
-	fm = Math.max(fm, 0.5);
-	fm = Math.floor(fm / 0.5) * 0.5;
-	document.body.style.setProperty('--fm', fm);
+	window.parent.document.querySelector('[rel="icon"]').href = canvas.toDataURL();
 }
 
 let 麻將 = (() => {
@@ -930,10 +921,6 @@ async function 遊戲開始() {
 }
 
 window.onload = async () => {
-	document.body.style.setProperty('--w', w);
-	document.body.style.setProperty('--h', h);
-	window.onresize = setfoundation;
-	setfoundation();
 	document.body.oncontextmenu = () => false;
 	主頁.show = 1;
 	遊戲.show = 0;
@@ -957,6 +944,6 @@ window.onload = async () => {
 	全變圖示.onmouseout = () => {
 		全變圖示.querySelector('animateTransform').setAttribute('to', 0);
 	};
-
+	window.parent.document.body.style.opacity = 1;
 	document.body.style.opacity = 1;
 };
