@@ -24,6 +24,6 @@ text {
 	dominant-baseline: middle;
 }
 
-[data-麻將="true"] {
+g[data-麻將="true"] {
 	transform: translate(calc(var(--x) * 60px), calc(var(--y) * 80px));
 }

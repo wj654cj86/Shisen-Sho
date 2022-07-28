@@ -228,7 +228,7 @@ let 麻將 = (() => {
 			}
 		};
 		mn.svg.onmousemove = () => mn.move.setAttribute('fill', '#00bf0055');
-		mn.svg.onmouseout = () => mn.move.setAttribute('fill', 'none');
+		mn.svg.onmouseleave = () => mn.move.setAttribute('fill', 'none');
 		mn.svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), mn.img, mn.seerect, mn.rect, mn.move);
 		牌區.append(mn.svg);
 		return mn;
