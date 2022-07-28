@@ -190,7 +190,8 @@ let 麻將 = (() => {
 			img: text2svg(`<use/>`),
 			seerect: text2svg(`<use href="#框線" fill="none"/>`),
 			rect: text2svg(`<use href="#框線" fill="none"/>`),
-			svg: text2svg(`<svg data-麻將="true" x="${60 * j}" y="${80 * i}" data-x="${j}" data-y="${i}" width="60" height="80" opacity="0"></svg>`),
+			move: text2svg(`<use href="#框線" fill="none"/>`),
+			svg: text2svg(`<g data-麻將="true" style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`),
 			lock(b) {
 				if (b) {
 					this.rect.setAttribute('fill', '#7f00ff55');
@@ -226,7 +227,9 @@ let 麻將 = (() => {
 				return this._id;
 			}
 		};
-		mn.svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), mn.img, mn.rect, mn.seerect);
+		mn.svg.onmousemove = () => mn.move.setAttribute('fill', '#00bf0055');
+		mn.svg.onmouseout = () => mn.move.setAttribute('fill', 'none');
+		mn.svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), mn.img, mn.seerect, mn.rect, mn.move);
 		牌區.append(mn.svg);
 		return mn;
 	}

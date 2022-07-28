@@ -2,5 +2,5 @@
 <svg width="60" height="60"
 	xmlns="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
-	<path fill="#fff" stroke-width="2" stroke="#000" d="M1,2.5 1,51.38 14.48,45.99 19.54,58.63 26.28,55.93 21.23,43.29 34.71,37.9Z"/>
+	<path fill="#fff" stroke-width="3" stroke="#000" d="M1.5,3.75V50.99L14.53,45.78 19.42,58 25.93,55.39 21.05,43.17 34.08,37.96Z"/>
 </svg>
