@@ -384,6 +384,7 @@ let 麻將 = (() => {
 			for (let i = 0; i < 高度; i++) {
 				for (let j = 0; j < 寬度; j++) {
 					節點[i][j].id = 亂數.draw();
+					節點[i][j].move.setAttribute('fill', 'none');
 					let [數, 色] = 節點[i][j].id.split('');
 					位置[色][數].push({ x: j, y: i });
 				}
