@@ -35,18 +35,18 @@
 				<rect id="時間條" x="255" y="-100" width="450" height="40" fill="#fff" />
 			</mask>
 		</g>
-		<svg id="全變圖示" x="-55" y="-100" width="50" height="50" viewBox="-20 -20 40 40">
-			<circle r="20" fill="#00000000" />
-			<g>
+		<svg x="-55" y="-100" width="50" height="50" viewBox="-20 -20 40 40">
+			<g id="全變圖示">
+				<circle r="23" fill="#00000000" />
 				<path id="半" fill="#fa0" d="M-9.8,-14.76C-13.65,-14.42 -16.8,-14.14 -16.82,-14.14 -16.83,-14.13 -12.87,-10.78 -12.67,-10.63 -12.65,-10.61 -12.68,-10.57 -12.8,-10.41 -14.29,-8.58 -15.39,-6.41 -15.97,-4.15 -16.5,-2.1 -16.64,0.1 -16.36,2.17 -16.12,3.98 -15.55,5.8 -14.73,7.44 -13.59,9.69 -11.9,11.71 -9.87,13.22 -7.91,14.68 -5.67,15.68 -3.3,16.17 -2.96,16.24 -2.86,16.25 -2.86,16.23 -2.86,16.21 -1.32,7.49 -1.31,7.43 -1.3,7.39 -1.32,7.38 -1.53,7.34 -2.43,7.15 -3.35,6.77 -4.14,6.25 -5.41,5.41 -6.41,4.18 -6.96,2.79 -7.22,2.13 -7.38,1.46 -7.46,0.76 -7.5,0.42 -7.5,-0.5 -7.45,-0.84 -7.26,-2.36 -6.74,-3.57 -5.78,-4.78L-5.75,-4.82 -3.65,-3.06C-2.13,-1.79 -1.55,-1.31 -1.54,-1.33 -1.54,-1.35 -1.81,-4.51 -2.15,-8.35 -2.49,-12.18 -2.76,-15.34 -2.76,-15.35 -2.76,-15.37 -2.77,-15.38 -2.79,-15.38 -2.8,-15.38 -5.96,-15.1 -9.8,-14.76" />
 				<use xlink:href="#半" transform="rotate(180)" />
-				<animateTransform attributeName="transform" type="rotate" from="0" to="0" begin="0s" dur="2s" repeatCount="indefinite" />
+				<animateTransform attributeName="transform" type="rotate" from="0" to="360" begin="全變圖示.mouseenter" end="全變圖示.mouseleave" dur="2s" repeatCount="indefinite" />
 			</g>
 		</svg>
 		<svg id="全變數量svg" x="0" y="-120" width="200" height="80" viewBox="-50 -20 100 40">
 			<text x="-50" y="4" fill="#fff" stroke="#fff" stroke-width="0.5" style="text-anchor:start;">0</text>
 		</svg>
-		<svg id="提示圖示" x="65" y="-100" width="50" height="50" viewBox="-20 -20 40 40">
+		<svg x="65" y="-100" width="50" height="50" viewBox="-20 -20 40 40">
 			<g opacity="0">
 				<path id="塊" d="M4.5,-2.81C4.5,-2.81 11.81,-4.97 15,-4.41 18.18,-3.83 19.53,-1.97 19.5,-0 19.53,1.97 18.18,3.83 15,4.41 11.81,4.97 4.5,2.81 4.5,2.81Z" />
 				<path id="眼影" d="M-13.3,4.03C-12.31,0.69 -11.75,-2.26 -9.8,-4.15 -7.86,-6.05 -4.98,-6.88 -2.01,-6.99 0.95,-7.1 4.11,-6.28 6.6,-4.94 9.1,-3.6 11.36,-1.81 14.07,0.23 14.07,0.23 9.93,3.83 7.72,5.05 5.5,6.28 3.22,7.27 -0.87,7.19 -4.96,7.11 -8.94,5.78 -13.3,4.03Z" />
@@ -59,26 +59,28 @@
 					<use href="#眼白" fill="#000" />
 				</mask>
 			</g>
-			<circle r="20" fill="#00000000" />
-			<g>
-				<use href="#塊" fill="#f00" />
-				<use href="#塊" fill="#ff0" transform="rotate(60)" />
-				<use href="#塊" fill="#0f0" transform="rotate(120)" />
-				<use href="#塊" fill="#0ff" transform="rotate(180)" />
-				<use href="#塊" fill="#00f" transform="rotate(240)" />
-				<use href="#塊" fill="#f0f" transform="rotate(300)" />
-				<animateTransform attributeName="transform" type="rotate" from="0" to="0" begin="0s" dur="2s" repeatCount="indefinite" />
-			</g>
-			<path fill="#111" d="M-11.34,-13.02C-8.4,-14.38 -4.53,-14.32 -0.93,-14.03 2.66,-13.74 6.56,-12.6 9.25,-11.51 11.93,-10.41 15.42,-8.48 15.42,-8.48 15.42,-8.48 11.45,-9.59 8.84,-9.99 6.24,-10.38 2.28,-10.79 -0.23,-10.61 -2.75,-10.43 -5.24,-9.94 -7.22,-8.93 -9.21,-7.91 -11.23,-6.06 -12.7,-5.95 -14.16,-5.83 -15.54,-7.23 -15.55,-8.64 -15.55,-10.06 -14.28,-11.65 -11.34,-13.02Z" />
-			<use href="#眼影" fill="#eee" />
-			<g mask="url(#眼白遮罩)">
+			<g id="提示圖示">
+				<circle r="20" fill="#00000000" />
 				<g>
-					<circle cx="-1.5" cy="-2" r="7" fill="#960" />
-					<circle cx="-1.5" cy="-2" r="3.5" fill="#000" />
-					<animateMotion path="M0,0" begin="0s" dur="2s" repeatCount="indefinite" />
+					<use href="#塊" fill="#f00" />
+					<use href="#塊" fill="#ff0" transform="rotate(60)" />
+					<use href="#塊" fill="#0f0" transform="rotate(120)" />
+					<use href="#塊" fill="#0ff" transform="rotate(180)" />
+					<use href="#塊" fill="#00f" transform="rotate(240)" />
+					<use href="#塊" fill="#f0f" transform="rotate(300)" />
+					<animateTransform attributeName="transform" type="rotate" from="0" to="360" begin="提示圖示.mouseenter" end="提示圖示.mouseleave" dur="2s" repeatCount="indefinite" />
 				</g>
+				<path fill="#222" d="M-11.34,-13.02C-8.4,-14.38 -4.53,-14.32 -0.93,-14.03 2.66,-13.74 6.56,-12.6 9.25,-11.51 11.93,-10.41 15.42,-8.48 15.42,-8.48 15.42,-8.48 11.45,-9.59 8.84,-9.99 6.24,-10.38 2.28,-10.79 -0.23,-10.61 -2.75,-10.43 -5.24,-9.94 -7.22,-8.93 -9.21,-7.91 -11.23,-6.06 -12.7,-5.95 -14.16,-5.83 -15.54,-7.23 -15.55,-8.64 -15.55,-10.06 -14.28,-11.65 -11.34,-13.02Z" />
+				<use href="#眼影" fill="#eee" />
+				<g mask="url(#眼白遮罩)">
+					<g>
+						<circle cx="-1.5" cy="-2" r="7" fill="#960" />
+						<circle cx="-1.5" cy="-2" r="3.5" fill="#222" />
+						<animateMotion path="M0,0 -4,0 0,0 4,0 0,0" begin="提示圖示.mouseenter" end="提示圖示.mouseleave" dur="2s" repeatCount="indefinite" />
+					</g>
+				</g>
+				<use href="#眼影" fill="#222" mask="url(#反眼白遮罩)" />
 			</g>
-			<use href="#眼影" fill="#111" mask="url(#反眼白遮罩)" />
 		</svg>
 		<svg id="提示數量svg" x="120" y="-120" width="200" height="80" viewBox="-50 -20 100 40">
 			<text x="-50" y="4" fill="#fff" stroke="#fff" stroke-width="0.5" style="text-anchor:start;">0</text>

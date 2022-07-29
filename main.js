@@ -933,21 +933,6 @@ window.onload = async () => {
 	await 載入音效();
 	await 麻將.初始化();
 	玩.onmousedown = 遊戲開始;
-	提示圖示.onmouseover = () => {
-		提示圖示.querySelector('animateTransform').setAttribute('to', 360);
-		提示圖示.querySelector('animateMotion').setAttribute('path', 'M0,0 -4,0 0,0 4,0 0,0');
-	};
-	提示圖示.onmouseout = () => {
-		提示圖示.querySelector('animateTransform').setAttribute('to', 0);
-		提示圖示.querySelector('animateMotion').setAttribute('path', 'M0,0');
-	};
-
-	全變圖示.onmouseover = () => {
-		全變圖示.querySelector('animateTransform').setAttribute('to', 360);
-	};
-	全變圖示.onmouseout = () => {
-		全變圖示.querySelector('animateTransform').setAttribute('to', 0);
-	};
 	window.parent.document.body.style.opacity = 1;
 	document.body.style.opacity = 1;
 };
