@@ -1,3 +1,4 @@
+import cc from "./colorconvert.js";
 Object.defineProperty(Node.prototype, 'show', {
 	set: function (s) {
 		this.style.opacity = s;
@@ -170,6 +171,15 @@ let 麻將 = (() => {
 	let 節點 = [];
 	let 座標 = ({ x, y }) => 節點[y][x];
 	let 張數 = 0;
+
+	function 麻將版掃描(cb = () => { }) {
+		for (let i = 0; i < 高度; i++) {
+			for (let j = 0; j < 寬度; j++) {
+				cb(i, j);
+			}
+		}
+	}
+
 	async function 初始化() {
 		for (let [色, 群] of Object.entries(模式)) {
 			for (let [數, 模] of Object.entries(群)) {
@@ -255,20 +265,20 @@ let 麻將 = (() => {
 		for (let i = 0; i < 2; i++) {
 			let p = ['x', 'y'][i];
 			let q = ['y', 'x'][i];
-			for (let _p of range(a[p], b[p])) {
+			range(a[p], b[p]).forEach(_p => {
 				try {
-					for (let M_p of range_nfl(a[p], _p)) 有麻將({ [p]: M_p, [q]: a[q] });
+					range_nfl(a[p], _p).forEach(M_p => 有麻將({ [p]: M_p, [q]: a[q] }));
 					if (_p != a[p]) 有麻將({ [p]: _p, [q]: a[q] });
-					for (let M_q of range_nfl(a[q], b[q])) 有麻將({ [p]: _p, [q]: M_q });
+					range_nfl(a[q], b[q]).forEach(M_q => 有麻將({ [p]: _p, [q]: M_q }));
 					if (_p != b[p]) 有麻將({ [p]: _p, [q]: b[q] });
-					for (let M_p of range_nfl(_p, b[p])) 有麻將({ [p]: M_p, [q]: b[q] });
+					range_nfl(_p, b[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: b[q] }));
 
 					if (_p == a[p] && _p == b[p]) { 結果 = { 成功: true, 轉角: [] }; }
 					else if (_p == a[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: b[q] }] }; }
 					else if (_p == b[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }] }; }
 					else if (!結果.成功) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }, { [p]: _p, [q]: b[q] }] }; }
 				} catch (e) { }
-			}
+			});
 			if (結果.成功 && 結果.轉角.length <= 1) return 結果;
 		}
 		if (結果.成功) return 結果;
@@ -282,16 +292,16 @@ let 麻將 = (() => {
 				let _p = R_p[j];
 				let L_p = [-1, S_p][j];
 				try {
-					for (let M_p of range_nl(_p, a[p])) 有麻將({ [p]: M_p, [q]: a[q] });
-					for (let M_p of range_nl(_p, b[p])) 有麻將({ [p]: M_p, [q]: b[q] });
-					for (let M_p of range_nfl(_p, L_p)) {
+					range_nl(_p, a[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: a[q] }));
+					range_nl(_p, b[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: b[q] }));
+					range_nfl(_p, L_p).forEach(M_p => {
 						有麻將({ [p]: M_p, [q]: a[q] });
 						有麻將({ [p]: M_p, [q]: b[q] });
 						try {
-							for (let M_q of range_nfl(a[q], b[q])) 有麻將({ [p]: M_p, [q]: M_q });
+							range_nfl(a[q], b[q]).forEach(M_q => 有麻將({ [p]: M_p, [q]: M_q }));
 							throw M_p;
 						} catch (e) { if (e != 'no') throw e; }
-					}
+					});
 					throw L_p;
 				} catch (e) {
 					if (e != 'no') {
@@ -381,14 +391,12 @@ let 麻將 = (() => {
 					}
 				}
 			}
-			for (let i = 0; i < 高度; i++) {
-				for (let j = 0; j < 寬度; j++) {
-					節點[i][j].id = 亂數.draw();
-					節點[i][j].move.setAttribute('fill', 'none');
-					let [數, 色] = 節點[i][j].id.split('');
-					位置[色][數].push({ x: j, y: i });
-				}
-			}
+			麻將版掃描((i, j) => {
+				節點[i][j].id = 亂數.draw();
+				節點[i][j].move.setAttribute('fill', 'none');
+				let [數, 色] = 節點[i][j].id.split('');
+				位置[色][數].push({ x: j, y: i });
+			});
 			if (!檢查有解()) 排除無解狀況();
 		},
 		全變() {
@@ -402,15 +410,13 @@ let 麻將 = (() => {
 					位置[色][數] = [];
 				}
 			}
-			for (let i = 0; i < 高度; i++) {
-				for (let j = 0; j < 寬度; j++) {
-					if (節點[i][j].id != '無') {
-						節點[i][j].id = 亂數.draw();
-						let [數, 色] = 節點[i][j].id.split('');
-						位置[色][數].push({ x: j, y: i });
-					}
+			麻將版掃描((i, j) => {
+				if (節點[i][j].id != '無') {
+					節點[i][j].id = 亂數.draw();
+					let [數, 色] = 節點[i][j].id.split('');
+					位置[色][數].push({ x: j, y: i });
 				}
-			}
+			});
 			if (!檢查有解()) 排除無解狀況();
 		}
 	};
@@ -420,14 +426,12 @@ let 麻將 = (() => {
 				位置[色][數] = [];
 			}
 		}
-		for (let i = 0; i < 高度; i++) {
-			for (let j = 0; j < 寬度; j++) {
-				if (節點[i][j].id != '無') {
-					let [數, 色] = 節點[i][j].id.split('');
-					位置[色][數].push({ x: j, y: i });
-				}
+		麻將版掃描((i, j) => {
+			if (節點[i][j].id != '無') {
+				let [數, 色] = 節點[i][j].id.split('');
+				位置[色][數].push({ x: j, y: i });
 			}
-		}
+		});
 	}
 
 	function 位移x(y, 開始, 結束) {
@@ -787,8 +791,7 @@ let 時間 = (() => {
 })();
 
 let 音效檔名 = ['select', 'deselect', 'connect', 'error', 'change', 'clear_stage'];
-let 音效;
-let 載入音效 = async () => 音效 = Object.fromEntries(await Promise.all(音效檔名.map(v => loadsound(`音效/${v}.mp3`).then(a => [v, a]))));
+let 音效 = Object.fromEntries(await Promise.all(音效檔名.map(v => loadsound(`音效/${v}.mp3`).then(a => [v, a]))));
 
 async function 載入封面() {
 	let img = await loadimg('封面.jpg');
@@ -798,9 +801,9 @@ async function 載入封面() {
 	let imgdt = ctx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
 	let a = imgdt.data;
 	for (let i = 0; i < a.length; i += 4) {
-		let [h, s, l] = rgbToHsl(a[i], a[i + 1], a[i + 2]);
-		h += 0.5;
-		let [r, g, b] = hslToRgb(h, s, l);
+		let [h, s, v] = cc.rgb.hsv(a[i], a[i + 1], a[i + 2]);
+		h = (h + 180) % 360;
+		let [r, g, b] = cc.hsv.rgb(h, s, v);
 		a[i] = r;
 		a[i + 1] = g;
 		a[i + 2] = b;
@@ -924,15 +927,12 @@ async function 遊戲開始() {
 	主頁.show = 1;
 }
 
-window.onload = async () => {
-	document.body.oncontextmenu = () => false;
-	主頁.show = 1;
-	遊戲.show = 0;
-	載入圖示();
-	載入封面();
-	await 載入音效();
-	await 麻將.初始化();
-	玩.onmousedown = 遊戲開始;
-	window.parent.document.body.style.opacity = 1;
-	document.body.style.opacity = 1;
-};
+document.body.oncontextmenu = () => false;
+主頁.show = 1;
+遊戲.show = 0;
+載入圖示();
+載入封面();
+await 麻將.初始化();
+玩.onmousedown = 遊戲開始;
+window.parent.document.body.style.opacity = 1;
+document.body.style.opacity = 1;
