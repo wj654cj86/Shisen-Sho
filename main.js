@@ -1,4 +1,6 @@
 import cc from "./colorconvert.js";
+Object.prototype.entries = function () { return Object.entries(this); };
+Object.prototype.forEach = function (cb = () => { }) { this.entries().forEach(([k, v]) => cb(v, k)); };
 Object.defineProperty(Node.prototype, 'show', {
 	set: function (s) {
 		this.style.opacity = s;
@@ -181,11 +183,7 @@ let 麻將 = (() => {
 	}
 
 	async function 初始化() {
-		for (let [色, 群] of Object.entries(模式)) {
-			for (let [數, 模] of Object.entries(群)) {
-				預設.append(text2svg(`<image id="${數}${色}" width="60" height="80" href="麻將/${色}/${數}.svg"/>`));
-			}
-		}
+		模式.forEach((群, 色) => 群.forEach((模, 數) => 預設.append(text2svg(`<image id="${數}${色}" width="60" height="80" href="麻將/${色}/${數}.svg"/>`))));
 		for (let i = 0; i < 高度; i++) {
 			節點[i] = [];
 			for (let j = 0; j < 寬度; j++) {
@@ -316,38 +314,40 @@ let 麻將 = (() => {
 		return 結果;
 	}
 	function 檢查有解() {
-		for (let [色, 群] of Object.entries(位置)) {
-			if (模式[色][Object.entries(群)[0][0]] == 0) {
-				for (let [數, 位] of Object.entries(群)) {
-					for (let i = 0; i < 位.length; i++) {
-						for (let j = i + 1; j < 位.length; j++) {
-							if (能否連線(位[i], 位[j]).成功) return true;
+		try {
+			位置.forEach((群, 色) => {
+				if (模式[色][Object.entries(群)[0][0]] == 0) {
+					群.forEach((位, 數) => {
+						for (let i = 0; i < 位.length; i++) {
+							for (let j = i + 1; j < 位.length; j++) {
+								if (能否連線(位[i], 位[j]).成功) throw true;
+							}
 						}
-					}
+					});
+				} else {
+					群.forEach((位1, 數1) => {
+						if (位1.length < 1) return;
+						群.forEach((位2, 數2) => {
+							if (數1 == 數2) return;
+							if (位2.length < 1) return;
+							if (模式[色][數1] != 模式[色][數2]) return;
+							if (能否連線(位1[0], 位2[0]).成功) throw true;
+						})
+					});
 				}
-			} else {
-				for (let [數1, 位1] of Object.entries(群)) {
-					if (位1.length < 1) continue;
-					for (let [數2, 位2] of Object.entries(群)) {
-						if (數1 == 數2) continue;
-						if (位2.length < 1) continue;
-						if (模式[色][數1] != 模式[色][數2]) continue;
-						if (能否連線(位1[0], 位2[0]).成功) return true;
-					}
-				}
-			}
-		}
-		return false;
+			});
+			return false;
+		} catch (e) { return true; }
 	}
 	function 排除無解狀況() {
 		let 亂數 = [];
-		for (let [色, 群] of Object.entries(位置)) {
-			for (let [數, 位] of Object.entries(群)) {
+		位置.forEach((群, 色) => {
+			群.forEach((位, 數) => {
 				for (let i = 0; i < 位.length; i++) {
 					亂數.push({ id: `${數}${色}`, 位: 位[i] });
 				}
-			}
-		}
+			});
+		});
 		let m1 = 亂數.draw();
 		while (亂數.length > 0) {
 			let m2 = 亂數.draw();
@@ -379,8 +379,8 @@ let 麻將 = (() => {
 	let 打亂 = {
 		開始() {
 			let 亂數 = [];
-			for (let [色, 群] of Object.entries(模式)) {
-				for (let [數, 模] of Object.entries(群)) {
+			模式.forEach((群, 色) => {
+				群.forEach((模, 數) => {
 					位置[色][數] = [];
 					if (模 == 0) {
 						for (let i = 0; i < 4; i++) {
@@ -389,8 +389,8 @@ let 麻將 = (() => {
 					} else {
 						亂數.push(`${數}${色}`);
 					}
-				}
-			}
+				});
+			});
 			麻將版掃描((i, j) => {
 				節點[i][j].id = 亂數.draw();
 				節點[i][j].move.setAttribute('fill', 'none');
@@ -402,14 +402,14 @@ let 麻將 = (() => {
 		全變() {
 			音效.change.replay();
 			let 亂數 = [];
-			for (let [色, 群] of Object.entries(位置)) {
-				for (let [數, 位] of Object.entries(群)) {
+			位置.forEach((群, 色) => {
+				群.forEach((位, 數) => {
 					for (let i = 0; i < 位.length; i++) {
 						亂數.push(`${數}${色}`);
 					}
 					位置[色][數] = [];
-				}
-			}
+				});
+			});
 			麻將版掃描((i, j) => {
 				if (節點[i][j].id != '無') {
 					節點[i][j].id = 亂數.draw();
@@ -421,11 +421,11 @@ let 麻將 = (() => {
 		}
 	};
 	function 節點轉位置() {
-		for (let [色, 群] of Object.entries(位置)) {
-			for (let [數, 位] of Object.entries(群)) {
+		位置.forEach((群, 色) => {
+			群.forEach((位, 數) => {
 				位置[色][數] = [];
-			}
-		}
+			});
+		});
 		麻將版掃描((i, j) => {
 			if (節點[i][j].id != '無') {
 				let [數, 色] = 節點[i][j].id.split('');
@@ -553,45 +553,47 @@ function 給提示() {
 	}
 	音效.select.replay();
 	let 亂數 = [];
-	for (let [色, 群] of Object.entries(麻將.位置)) {
-		for (let [數, 位] of Object.entries(群)) {
+	麻將.位置.forEach((群, 色) => {
+		群.forEach((位, 數) => {
 			for (let i = 0; i < 位.length; i++) {
 				亂數.push({ id: `${數}${色}`, 位: 位[i] });
 			}
-		}
-	}
-	do {
-		let m1 = 亂數.draw();
-		let [數, 色] = m1.id.split('');
-		if (麻將.模式[色][數] == 0) {
-			let 位 = 麻將.位置[色][數];
-			for (let i = 0; i < 位.length; i++) {
-				for (let j = i + 1; j < 位.length; j++) {
-					if (麻將.能否連線(位[i], 位[j]).成功) {
-						提示位置 = [位[i], 位[j]];
-						麻將.座標(位[i]).see(true);
-						麻將.座標(位[j]).see(true);
-						return;
+		});
+	});
+	try {
+		do {
+			let m1 = 亂數.draw();
+			let [數, 色] = m1.id.split('');
+			if (麻將.模式[色][數] == 0) {
+				let 位 = 麻將.位置[色][數];
+				for (let i = 0; i < 位.length; i++) {
+					for (let j = i + 1; j < 位.length; j++) {
+						if (麻將.能否連線(位[i], 位[j]).成功) {
+							提示位置 = [位[i], 位[j]];
+							麻將.座標(位[i]).see(true);
+							麻將.座標(位[j]).see(true);
+							return;
+						}
 					}
 				}
+			} else {
+				麻將.位置[色].forEach((位1, 數1) => {
+					if (位1.length < 1) return;
+					麻將.位置[色].forEach((位2, 數2) => {
+						if (數1 == 數2) return;
+						if (位2.length < 1) return;
+						if (麻將.模式[色][數1] != 麻將.模式[色][數2]) return;
+						if (麻將.能否連線(位1[0], 位2[0]).成功) {
+							提示位置 = [位1[0], 位2[0]];
+							麻將.座標(位1[0]).see(true);
+							麻將.座標(位2[0]).see(true);
+							throw 'no';
+						}
+					});
+				});
 			}
-		} else {
-			for (let [數1, 位1] of Object.entries(麻將.位置[色])) {
-				if (位1.length < 1) continue;
-				for (let [數2, 位2] of Object.entries(麻將.位置[色])) {
-					if (數1 == 數2) continue;
-					if (位2.length < 1) continue;
-					if (麻將.模式[色][數1] != 麻將.模式[色][數2]) continue;
-					if (麻將.能否連線(位1[0], 位2[0]).成功) {
-						提示位置 = [位1[0], 位2[0]];
-						麻將.座標(位1[0]).see(true);
-						麻將.座標(位2[0]).see(true);
-						return;
-					}
-				}
-			}
-		}
-	} while (亂數.length > 0);
+		} while (亂數.length > 0);
+	} catch (e) { }
 }
 function 清理提示() {
 	if (提示位置.length == 2) {
