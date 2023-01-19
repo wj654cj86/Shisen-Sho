@@ -175,21 +175,12 @@ let 麻將 = (() => {
 	let 張數 = 0;
 
 	function 麻將版掃描(cb = () => { }) {
-		for (let i = 0; i < 高度; i++) {
-			for (let j = 0; j < 寬度; j++) {
-				cb(i, j);
-			}
-		}
+		range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
 	}
 
 	async function 初始化() {
 		模式.forEach((群, 色) => 群.forEach((模, 數) => 預設.append(text2svg(`<image id="${數}${色}" width="60" height="80" href="麻將/${色}/${數}.svg"/>`))));
-		for (let i = 0; i < 高度; i++) {
-			節點[i] = [];
-			for (let j = 0; j < 寬度; j++) {
-				節點[i][j] = 建立節點(i, j);
-			}
-		}
+		range_nl(0, 高度).forEach(i => { 節點[i] = []; range_nl(0, 寬度).forEach(j => 節點[i][j] = 建立節點(i, j)) });
 	}
 	function 建立節點(i, j) {
 		let mn = {
@@ -435,91 +426,43 @@ let 麻將 = (() => {
 	}
 
 	function 位移x(y, 開始, 結束) {
-		for (let x of range(開始, 結束)) {
-			if (節點[y][x].id != '無') continue;
-			for (let _x of range_nf(x, 結束)) {
+		range(開始, 結束).forEach(x => {
+			if (節點[y][x].id != '無') return;
+			range_nf(x, 結束).find(_x => {
 				if (節點[y][_x].id != '無') {
 					節點[y][x].id = 節點[y][_x].id;
 					節點[y][_x].id = '無';
-					break;
+					return true;
 				}
-			}
-		}
+			});
+		});
 	}
 	function 位移y(x, 開始, 結束) {
-		for (let y of range(開始, 結束)) {
-			if (節點[y][x].id != '無') continue;
-			for (let _y of range_nf(y, 結束)) {
+		range(開始, 結束).forEach(y => {
+			if (節點[y][x].id != '無') return;
+			range_nf(y, 結束).find(_y => {
 				if (節點[_y][x].id != '無') {
 					節點[y][x].id = 節點[_y][x].id;
 					節點[_y][x].id = '無';
-					break;
+					return true;
 				}
-			}
-		}
+			});
+		});
 	}
 
 	let 移動函數 = [
 		() => { },
 		() => { },
-		() => {
-			for (let x = 0; x < 寬度; x++) {
-				位移y(x, 高度 - 1, 0);
-			}
-		},
-		() => {
-			for (let y = 0; y < 高度; y++) {
-				位移x(y, 0, 寬度 - 1);
-			}
-		},
-		() => {
-			for (let x = 0; x < 寬度; x++) {
-				位移y(x, 0, 4 - 1);
-				位移y(x, 高度 - 1, 4);
-			}
-		},
-		() => {
-			for (let y = 0; y < 高度; y++) {
-				位移x(y, 0, 8 - 1);
-				位移x(y, 寬度 - 1, 8);
-			}
-		},
-		() => {
-			for (let x = 0; x < 寬度; x++) {
-				位移y(x, 4, 高度 - 1);
-				位移y(x, 4 - 1, 0);
-			}
-		},
-		() => {
-			for (let y = 0; y < 高度; y++) {
-				位移x(y, 8, 寬度 - 1);
-				位移x(y, 8 - 1, 0);
-			}
-		},
-		() => {
-			for (let y = 0; y < 4; y++) {
-				位移x(y, 0, 寬度 - 1);
-			}
-			for (let y = 4; y < 高度; y++) {
-				位移x(y, 寬度 - 1, 0);
-			}
-		},
-		() => {
-			for (let x = 0; x < 8; x++) {
-				位移y(x, 高度 - 1, 0);
-			}
-			for (let x = 8; x < 寬度; x++) {
-				位移y(x, 0, 高度 - 1);
-			}
-		},
-		() => {
-			移動函數[5]();
-			移動函數[4]();
-		},
-		() => {
-			移動函數[7]();
-			移動函數[6]();
-		}
+		() => range_nl(0, 寬度).forEach(x => 位移y(x, 高度 - 1, 0)),
+		() => range_nl(0, 高度).forEach(y => 位移x(y, 0, 寬度 - 1)),
+		() => range_nl(0, 寬度).forEach(x => { 位移y(x, 0, 4 - 1); 位移y(x, 高度 - 1, 4); }),
+		() => range_nl(0, 高度).forEach(y => { 位移x(y, 0, 8 - 1); 位移x(y, 寬度 - 1, 8); }),
+		() => range_nl(0, 寬度).forEach(x => { 位移y(x, 4, 高度 - 1); 位移y(x, 4 - 1, 0); }),
+		() => range_nl(0, 高度).forEach(y => { 位移x(y, 8, 寬度 - 1); 位移x(y, 8 - 1, 0); }),
+		() => range_nl(0, 高度).forEach(y => y < 4 ? 位移x(y, 0, 寬度 - 1) : 位移x(y, 寬度 - 1, 0)),
+		() => range_nl(0, 寬度).forEach(x => x < 8 ? 位移y(x, 高度 - 1, 0) : 位移y(x, 0, 高度 - 1)),
+		() => { 移動函數[5](); 移動函數[4](); },
+		() => { 移動函數[7](); 移動函數[6](); }
 	];
 
 	function 移動(關卡) {
