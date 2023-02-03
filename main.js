@@ -278,6 +278,60 @@ let 麻將 = (() => {
 			if (!檢查有解()) 排除無解狀況();
 		}
 	};
+	let 提示 = {
+		位置: [],
+		顯示() {
+			if (提示.位置.length == 2) {
+				let [a, b] = 提示.位置;
+				if (座標(a).id != '無' && 座標(b).id != '無') return;
+			}
+			音效.select.replay();
+			let 亂數 = [];
+			位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
+			try {
+				do {
+					let 檢測確認 = (a, b) => {
+						if (!能否連線(a, b).成功) return;
+						提示.位置 = [a, b];
+						座標(a).see(true);
+						座標(b).see(true);
+						throw 'ok';
+					};
+					let m1 = 亂數.draw();
+					let [數, 色] = m1.id.split('');
+					if (模式[色][數] == 0) {
+						let 位 = 位置[色][數];
+						位掃描(位, (i, j) => 檢測確認(位[i], 位[j]));
+					} else {
+						位置[色].forEach((位1, 數1) => {
+							if (位1.length < 1) return;
+							位置[色].forEach((位2, 數2) => {
+								if (數1 == 數2) return;
+								if (位2.length < 1) return;
+								if (模式[色][數1] != 模式[色][數2]) return;
+								檢測確認(位1[0], 位2[0]);
+							});
+						});
+					}
+				} while (亂數.length > 0);
+			} catch (e) { }
+		},
+		清理() {
+			if (提示.位置.length == 2) {
+				let [a, b] = 提示.位置;
+				座標(a).see(false);
+				座標(b).see(false);
+			}
+			提示.位置 = [];
+		},
+		存在() {
+			if (提示.位置.length == 2) {
+				let [a, b] = 提示.位置;
+				if (座標(a).id != '無' && 座標(b).id != '無') return true;
+			}
+			return false;
+		}
+	};
 	function 節點轉位置() {
 		位置掃描((色, 數, 位) => 位置[色][數] = []);
 		版面掃描((i, j) => {
@@ -334,77 +388,19 @@ let 麻將 = (() => {
 	}
 
 	return {
-		寬度, 高度,
 		模式, 位置,
 		節點, 座標,
 		get 張數() { return 張數; },
 		set 張數(n) { 張數 = n; },
-		位置掃描,
-		位掃描,
 		初始化,
-		建立節點,
 		一樣,
 		位置相同,
 		能否連線,
-		檢查有解, 排除無解狀況,
-		打亂,
-		節點轉位置,
+		檢查有解,
+		打亂, 提示,
 		移動,
 	}
 })();
-
-let 提示位置 = [];
-function 給提示() {
-	if (提示位置.length == 2) {
-		let [a, b] = 提示位置;
-		if (麻將.座標(a).id != '無' && 麻將.座標(b).id != '無') return;
-	}
-	音效.select.replay();
-	let 亂數 = [];
-	麻將.位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
-	try {
-		do {
-			let 檢測確認 = (a, b) => {
-				if (!麻將.能否連線(a, b).成功) return;
-				提示位置 = [a, b];
-				麻將.座標(a).see(true);
-				麻將.座標(b).see(true);
-				throw 'ok';
-			};
-			let m1 = 亂數.draw();
-			let [數, 色] = m1.id.split('');
-			if (麻將.模式[色][數] == 0) {
-				let 位 = 麻將.位置[色][數];
-				麻將.位掃描(位, (i, j) => 檢測確認(位[i], 位[j]));
-			} else {
-				麻將.位置[色].forEach((位1, 數1) => {
-					if (位1.length < 1) return;
-					麻將.位置[色].forEach((位2, 數2) => {
-						if (數1 == 數2) return;
-						if (位2.length < 1) return;
-						if (麻將.模式[色][數1] != 麻將.模式[色][數2]) return;
-						檢測確認(位1[0], 位2[0]);
-					});
-				});
-			}
-		} while (亂數.length > 0);
-	} catch (e) { }
-}
-function 清理提示() {
-	if (提示位置.length == 2) {
-		let [a, b] = 提示位置;
-		麻將.座標(a).see(false);
-		麻將.座標(b).see(false);
-	}
-	提示位置 = [];
-}
-function 有提示() {
-	if (提示位置.length == 2) {
-		let [a, b] = 提示位置;
-		if (麻將.座標(a).id != '無' && 麻將.座標(b).id != '無') return true;
-	}
-	return false;
-}
 
 async function 麻將連線(...args) {
 	連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
@@ -429,7 +425,7 @@ async function 記錄選擇麻將(x, y) {
 			let 結果 = 麻將.能否連線(a, b);
 			if (!結果.成功) throw 'no';
 			音效.connect.replay();
-			清理提示();
+			麻將.提示.清理();
 			麻將.座標(b).lock(true);
 			麻將.張數 -= 2;
 			分數.num += 20;
@@ -446,7 +442,7 @@ async function 記錄選擇麻將(x, y) {
 						return '沒有全變';
 					}
 				}
-				// 給提示();
+				// 麻將.提示.顯示();
 			} else {
 				return '沒有麻將';
 			}
@@ -638,7 +634,7 @@ async function 遊戲開始() {
 			麻將.張數 = 144;
 			麻將.打亂.開始();
 			時間.開始();
-			// 給提示();
+			// 麻將.提示.顯示();
 			try {
 				while (true) {
 					let 物件 = await Promise.any([
@@ -657,17 +653,17 @@ async function 遊戲開始() {
 							break;
 						case '提示圖示':
 							try {
-								if (有提示()) throw 'no';
+								if (麻將.提示.存在()) throw 'no';
 								if (提示.num > 0) {
 									提示.num--;
 									時間.扣時();
-									給提示();
+									麻將.提示.顯示();
 								}
 							} catch (e) { }
 							break;
 						case '全變圖示':
 							取消選擇麻將();
-							清理提示();
+							麻將.提示.清理();
 							if (全變.num > 0) {
 								全變.num--;
 								時間.扣時();
