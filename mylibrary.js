@@ -1,6 +1,5 @@
-Number.prototype.padStart = function (...args) {
-	return this.toString().padStart(...args);
-};
+Number.prototype.padStart = function (...args) { return this.toString().padStart(...args); };
+Number.prototype.padEnd = function (...args) { return this.toString().padEnd(...args); };
 
 function setCookie(key, value) {
 	let d = new Date();
@@ -37,7 +36,7 @@ let sentpost = (url, obj) => fetch(url, {
 	body: JSON.stringify(obj),
 	headers: { 'content-type': 'application/json' },
 	method: 'POST'
-}).then(response => response.text());
+}).then(r => r.text());
 
 let text2xml = text => (new DOMParser()).parseFromString(text, "text/xml");
 let xml2text = xml => (new XMLSerializer()).serializeToString(xml);
@@ -49,13 +48,10 @@ function text2html(text) {
 	return t.content.firstChild;
 }
 
-function text2svg(text) {
-	return (new DOMParser()).parseFromString(
-		`<?xml version="1.0" encoding="UTF-8"?>
-			<svg xmlns="http://www.w3.org/2000/svg"
-				 xmlns:xlink="http://www.w3.org/1999/xlink">${text}
-			</svg>`, "image/svg+xml").querySelector('svg').firstChild;
-}
+let text2svg = text => (new DOMParser()).parseFromString(
+	`<?xml version="1.0" encoding="UTF-8"?>`
+	+ `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${text.replace(/^\s*<\?[\w\s\"\'\.\-\=]*\?>\s*/g, '')}</svg>`,
+	"image/svg+xml").querySelector('svg').firstChild;
 
 let getimgsize = src => new Promise((res, rej) => {
 	let img = new Image();
@@ -71,27 +67,19 @@ let loadimg = src => new Promise((res, rej) => {
 	img.src = src;
 });
 
-function svgtourl(svg) {
-	let svgstring = xml2text(svg);
-	let blob = new Blob([svgstring], { type: 'image/svg+xml' });
-	return URL.createObjectURL(blob);
+function imgtocanvas(img) {
+	let canvas = text2html(`<canvas width="${img.naturalWidth}" height="${img.naturalHeight}"/>`);
+	let ctx = canvas.getContext("2d");
+	ctx.drawImage(img, 0, 0);
+	return canvas;
 }
 
+let svgtexttourl = text => URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
+let svgtourl = svg => svgtexttourl(xml2text(svg));
 let svgtoimg = svg => loadimg(svgtourl(svg));
 
-let svgtopngurl = svg => svgtoimg(svg).then(img => {
-	let canvas = text2html(`<canvas width="${img.naturalWidth}" height="${img.naturalHeight}"/>`);
-	let ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0, 0);
-	return new Promise(r => canvas.toBlob(blob => r(URL.createObjectURL(blob))));
-});
-
-let pngtobase64 = src => loadimg(src).then(img => {
-	let canvas = text2html(`<canvas width="${img.naturalWidth}" height="${img.naturalHeight}"/>`);
-	let ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0, 0);
-	return canvas.toDataURL();
-});
+let svgtopngurl = svg => svgtoimg(svg).then(img => new Promise(r => imgtocanvas(img).toBlob(blob => r(URL.createObjectURL(blob)))));
+let pngtobase64 = src => loadimg(src).then(img => imgtocanvas(img).toDataURL());
 
 function startDownload(url, name) {
 	let a = document.createElement('a');

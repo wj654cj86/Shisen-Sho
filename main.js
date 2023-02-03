@@ -7,13 +7,7 @@ Object.defineProperty(Node.prototype, 'show', {
 		this.style.zIndex = s;
 	}
 });
-Array.prototype.draw = function () {
-	if (this.length <= 0) return null;
-	let j = Math.floor(Math.random() * this.length);
-	let d = this[j];
-	this.splice(j, 1);
-	return d;
-};
+Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
 
 Audio.prototype.replay = function () {
 	this.currentTime = 0;
@@ -59,116 +53,20 @@ async function 載入圖示() {
 let 麻將 = (() => {
 	let 寬度 = 16, 高度 = 9;
 	let 模式 = {
-		筒: {
-			一: 0,
-			二: 0,
-			三: 0,
-			四: 0,
-			五: 0,
-			六: 0,
-			七: 0,
-			八: 0,
-			九: 0
-		},
-		條: {
-			一: 0,
-			二: 0,
-			三: 0,
-			四: 0,
-			五: 0,
-			六: 0,
-			七: 0,
-			八: 0,
-			九: 0
-		},
-		萬: {
-			一: 0,
-			二: 0,
-			三: 0,
-			四: 0,
-			五: 0,
-			六: 0,
-			七: 0,
-			八: 0,
-			九: 0
-		},
-		風: {
-			東: 0,
-			南: 0,
-			西: 0,
-			北: 0
-		},
-		元: {
-			中: 0,
-			發: 0,
-			白: 0
-		},
-		花: {
-			春: 1,
-			夏: 1,
-			秋: 1,
-			冬: 1,
-			梅: 2,
-			蘭: 2,
-			菊: 2,
-			竹: 2
-		}
+		筒: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
+		條: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
+		萬: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
+		風: { 東: 0, 南: 0, 西: 0, 北: 0 },
+		元: { 中: 0, 發: 0, 白: 0 },
+		花: { 春: 1, 夏: 1, 秋: 1, 冬: 1, 梅: 2, 蘭: 2, 菊: 2, 竹: 2 }
 	};
 	let 位置 = {
-		筒: {
-			一: [],
-			二: [],
-			三: [],
-			四: [],
-			五: [],
-			六: [],
-			七: [],
-			八: [],
-			九: []
-		},
-		條: {
-			一: [],
-			二: [],
-			三: [],
-			四: [],
-			五: [],
-			六: [],
-			七: [],
-			八: [],
-			九: []
-		},
-		萬: {
-			一: [],
-			二: [],
-			三: [],
-			四: [],
-			五: [],
-			六: [],
-			七: [],
-			八: [],
-			九: []
-		},
-		風: {
-			東: [],
-			南: [],
-			西: [],
-			北: []
-		},
-		元: {
-			中: [],
-			發: [],
-			白: []
-		},
-		花: {
-			春: [],
-			夏: [],
-			秋: [],
-			冬: [],
-			梅: [],
-			蘭: [],
-			菊: [],
-			竹: []
-		}
+		筒: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
+		條: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
+		萬: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
+		風: { 東: [], 南: [], 西: [], 北: [] },
+		元: { 中: [], 發: [], 白: [] },
+		花: { 春: [], 夏: [], 秋: [], 冬: [], 梅: [], 蘭: [], 菊: [], 竹: [] }
 	};
 	let 節點 = [];
 	let 座標 = ({ x, y }) => 節點[y][x];
@@ -244,9 +142,8 @@ let 麻將 = (() => {
 				return false;
 		}
 	}
-	function 位置相同(a, b) {
-		return a.x == b.x && a.y == b.y;
-	}
+
+	let 位置相同 = (a, b) => a.x == b.x && a.y == b.y;
 
 	function 能否連線(a, b) {
 		let 有麻將 = ({ x, y }) => { if (節點[y][x].id != '無') throw 'no'; };
@@ -501,6 +398,13 @@ function 清理提示() {
 	}
 	提示位置 = [];
 }
+function 有提示() {
+	if (提示位置.length == 2) {
+		let [a, b] = 提示位置;
+		if (麻將.座標(a).id != '無' && 麻將.座標(b).id != '無') return true;
+	}
+	return false;
+}
 
 async function 麻將連線(...args) {
 	連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
@@ -629,16 +533,17 @@ let 關卡 = (() => {
 })();
 
 let 時間 = (() => {
+	let 總時間 = 450e3;
 	let 開始點 = 0;
 	let 剩餘 = 0;
 	let 計時器指標 = null;
 	let 模式 = '結束';
 	let 到了 = () => { };
 	function 計時器函數() {
-		let t = 450e3 - (Date.now() - 開始點);
+		let t = 總時間 - (Date.now() - 開始點);
 		if (t <= 0) {
 			時間條.setAttribute('width', 0);
-			到了('時間');
+			到了();
 		} else {
 			時間條.setAttribute('width', Math.floor(t / 1e3));
 		}
@@ -653,7 +558,7 @@ let 時間 = (() => {
 				break;
 			case '暫停':
 				模式 = '開始';
-				開始點 = Date.now() - (450e3 - 剩餘);
+				開始點 = Date.now() - (總時間 - 剩餘);
 				計時器指標 = setInterval(計時器函數, 500);
 				break;
 			default:
@@ -662,14 +567,12 @@ let 時間 = (() => {
 	}
 	function 結束() {
 		模式 = '結束';
-		if (計時器指標 !== null)
-			clearInterval(計時器指標);
+		if (計時器指標 !== null) clearInterval(計時器指標);
 	}
 	function 暫停() {
 		模式 = '暫停';
-		剩餘 = 450e3 - (Date.now() - 開始點);
-		if (計時器指標 !== null)
-			clearInterval(計時器指標);
+		剩餘 = 總時間 - (Date.now() - 開始點);
+		if (計時器指標 !== null) clearInterval(計時器指標);
 	}
 	function 扣時() {
 		開始點 -= 15e3;
@@ -714,7 +617,7 @@ async function 載入封面() {
 
 async function 顯示信息(str) {
 	let arr = str.split('\n');
-	信息.querySelectorAll('tspan').forEach((tspan, key) => tspan.innerHTML = arr[key] ? arr[key] : '');
+	信息.querySelectorAll('tspan').forEach((tspan, key) => tspan.innerHTML = arr[key] ?? '');
 	遊戲.append(小窗);
 	await new Promise(r => 確定.onmousedown = r);
 	預設.append(小窗);
@@ -738,24 +641,23 @@ async function 遊戲開始() {
 			// 給提示();
 			try {
 				while (true) {
-					let 事件 = await Promise.any([
+					let 物件 = await Promise.any([
 						...麻將.節點.flatMap(_v => _v.map(v => new Promise(r => v.svg.onmousedown = function (e) { if (e.button === 0) r(this); }))),
 						new Promise(r => 遊戲.onmousedown = function (e) { if (e.button === 2) r(this); }),
 						new Promise(r => 提示圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
 						new Promise(r => 全變圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
-						new Promise(r => 時間.到了 = r)
+						new Promise(r => 時間.到了 = () => r({ id: '時間' }))
 					]);
-					if (事件 == '時間') throw '沒有時間';
-					switch (事件.id) {
+					switch (物件.id) {
+						case '時間':
+							throw '沒有時間';
+							break;
 						case '遊戲':
 							取消選擇麻將();
 							break;
 						case '提示圖示':
 							try {
-								if (提示位置.length == 2) {
-									let [a, b] = 提示位置;
-									if (麻將.座標(a).id != '無' && 麻將.座標(b).id != '無') throw 'no';
-								}
+								if (有提示()) throw 'no';
 								if (提示.num > 0) {
 									提示.num--;
 									時間.扣時();
@@ -773,8 +675,8 @@ async function 遊戲開始() {
 							}
 							break;
 						default:
-							if (事件.dataset.麻將) {
-								let { x, y } = 事件.dataset;
+							if (物件.dataset.麻將) {
+								let { x, y } = 物件.dataset;
 								let 回傳值 = await 記錄選擇麻將(Number(x), Number(y));
 								if (回傳值) throw 回傳值;
 							}
