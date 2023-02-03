@@ -202,6 +202,12 @@ let 麻將 = (() => {
 		}
 		return 結果;
 	}
+	async function 連線(...args) {
+		連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
+		await sleep(100);
+		連線path.removeAttribute('d');
+	}
+
 	function 檢查有解() {
 		try {
 			let 檢測確認 = (a, b) => { if (能否連線(a, b).成功) throw true; };
@@ -386,81 +392,70 @@ let 麻將 = (() => {
 		移動函數[關卡]();
 		節點轉位置();
 	}
-
+	let 選擇 = {
+		位置: null,
+		async 記錄(x, y) {
+			if (節點[y][x].id == '無') return;
+			if (選擇.位置 === null) {
+				音效.select.replay();
+				節點[y][x].lock(true);
+				選擇.位置 = { x, y };
+			} else {
+				let a = 選擇.位置;
+				let b = { x, y };
+				if (位置相同(a, b)) return;
+				選擇.位置 = null;
+				try {
+					if (!一樣(a, b)) throw 'no';
+					let 結果 = 能否連線(a, b);
+					if (!結果.成功) throw 'no';
+					音效.connect.replay();
+					提示.清理();
+					座標(b).lock(true);
+					張數 -= 2;
+					分數.num += 20;
+					await 連線(a, ...結果.轉角, b);
+					座標(a).id = '無';
+					座標(b).id = '無';
+					if (張數) {
+						移動(關卡.num);
+						if (!檢查有解()) {
+							if (全變.num > 0) {
+								全變.num--;
+								打亂.全變();
+							} else {
+								return '沒有全變';
+							}
+						}
+						// 提示.顯示();
+					} else {
+						return '沒有麻將';
+					}
+				} catch (e) {
+					音效.error.replay();
+					座標(a).lock(false);
+				}
+				選擇.位置 = null;
+			}
+		},
+		取消() {
+			if (選擇.位置 === null) return;
+			音效.deselect.replay();
+			let a = 選擇.位置;
+			座標(a).lock(false);
+			選擇.位置 = null;
+		}
+	};
 	return {
-		模式, 位置,
-		節點, 座標,
+		節點,
 		get 張數() { return 張數; },
 		set 張數(n) { 張數 = n; },
 		初始化,
-		一樣,
-		位置相同,
-		能否連線,
-		檢查有解,
-		打亂, 提示,
-		移動,
+		打亂,
+		提示,
+		選擇
 	}
 })();
-
-async function 麻將連線(...args) {
-	連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
-	await sleep(100);
-	連線path.removeAttribute('d');
-}
-
-let 選擇麻將 = null;
-async function 記錄選擇麻將(x, y) {
-	if (麻將.節點[y][x].id == '無') return;
-	if (選擇麻將 === null) {
-		音效.select.replay();
-		麻將.節點[y][x].lock(true);
-		選擇麻將 = { x, y };
-	} else {
-		let a = 選擇麻將;
-		let b = { x, y };
-		if (麻將.位置相同(a, b)) return;
-		選擇麻將 = null;
-		try {
-			if (!麻將.一樣(a, b)) throw 'no';
-			let 結果 = 麻將.能否連線(a, b);
-			if (!結果.成功) throw 'no';
-			音效.connect.replay();
-			麻將.提示.清理();
-			麻將.座標(b).lock(true);
-			麻將.張數 -= 2;
-			分數.num += 20;
-			await 麻將連線(a, ...結果.轉角, b);
-			麻將.座標(a).id = '無';
-			麻將.座標(b).id = '無';
-			if (麻將.張數) {
-				麻將.移動(關卡.num);
-				if (!麻將.檢查有解()) {
-					if (全變.num > 0) {
-						全變.num--;
-						麻將.打亂.全變();
-					} else {
-						return '沒有全變';
-					}
-				}
-				// 麻將.提示.顯示();
-			} else {
-				return '沒有麻將';
-			}
-		} catch (e) {
-			音效.error.replay();
-			麻將.座標(a).lock(false);
-		}
-		選擇麻將 = null;
-	}
-}
-
-function 取消選擇麻將() {
-	if (選擇麻將 === null) return;
-	音效.deselect.replay();
-	let a = 選擇麻將;
-	麻將.座標(a).lock(false);
-	選擇麻將 = null;
-}
 
 let 全變 = (() => {
 	let _num = 0;
@@ -548,7 +543,7 @@ let 時間 = (() => {
 		switch (模式) {
 			case '結束':
 				模式 = '開始';
-				時間條.setAttribute('width', 450);
+				時間條.setAttribute('width', Math.floor(總時間 / 1e3));
 				開始點 = Date.now();
 				計時器指標 = setInterval(計時器函數, 500);
 				break;
@@ -620,7 +615,7 @@ async function 顯示信息(str) {
 }
 
 async function 遊戲開始() {
-	選擇麻將 = null;
+	麻將.選擇.位置 = null;
 	分數.num = 0;
 	主頁.show = 0;
 	遊戲.show = 1;
@@ -649,20 +644,18 @@ async function 遊戲開始() {
 							throw '沒有時間';
 							break;
 						case '遊戲':
-							取消選擇麻將();
+							麻將.選擇.取消();
 							break;
 						case '提示圖示':
-							try {
-								if (麻將.提示.存在()) throw 'no';
-								if (提示.num > 0) {
-									提示.num--;
-									時間.扣時();
-									麻將.提示.顯示();
-								}
-							} catch (e) { }
+							if (麻將.提示.存在()) break;
+							if (提示.num > 0) {
+								提示.num--;
+								時間.扣時();
+								麻將.提示.顯示();
+							}
 							break;
 						case '全變圖示':
-							取消選擇麻將();
+							麻將.選擇.取消();
 							麻將.提示.清理();
 							if (全變.num > 0) {
 								全變.num--;
@@ -673,7 +666,7 @@ async function 遊戲開始() {
 						default:
 							if (物件.dataset.麻將) {
 								let { x, y } = 物件.dataset;
-								let 回傳值 = await 記錄選擇麻將(Number(x), Number(y));
+								let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
 								if (回傳值) throw 回傳值;
 							}
 							break;
