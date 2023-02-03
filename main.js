@@ -1,14 +1,15 @@
 import cc from "./colorconvert.js";
 Object.prototype.entries = function () { return Object.entries(this); };
 Object.prototype.forEach = function (cb = () => { }) { this.entries().forEach(([k, v]) => cb(v, k)); };
+Object.prototype.some = function (cb = () => { }) { return this.entries().some(([k, v]) => cb(v, k)); };
 Object.defineProperty(Node.prototype, 'show', {
 	set: function (s) {
 		this.style.opacity = s;
 		this.style.zIndex = s;
 	}
 });
-Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
 
+Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
 Audio.prototype.replay = function () {
 	this.currentTime = 0;
 	this.play();
@@ -60,7 +61,7 @@ let 麻將 = (() => {
 	let 模式掃描 = cb => 模式.forEach((群, 色) => 群.forEach((模, 數) => cb(色, 數, 模)));
 	let 位置掃描 = cb => 位置.forEach((群, 色) => 群.forEach((位, 數) => cb(色, 數, 位)));
 	let 版面掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
-	let 位掃描 = (位, cb) => range_nl(0, 位.length).forEach(i => range_nl(i + 1, 位.length).forEach(j => cb(i, j)));
+	let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, 位.length).some(j => cb(i, j)));
 
 	async function 初始化() {
 		模式掃描((色, 數, 模) => 預設.append(text2svg(`<image id="${數}${色}" width="60" height="80" href="麻將/${色}/${數}.svg"/>`)));
@@ -192,27 +193,23 @@ let 麻將 = (() => {
 		await sleep(100);
 		連線path.removeAttribute('d');
 	}
-
 	function 檢查有解() {
-		try {
-			let 檢測確認 = (a, b) => { if (能否連線(a, b).成功) throw true; };
-			位置.forEach((群, 色) => {
-				if (模式[色][Object.entries(群)[0][0]] == 0) {
-					群.forEach((位, 數) => 位掃描(位, (i, j) => 檢測確認(位[i], 位[j])));
-				} else {
-					群.forEach((位1, 數1) => {
-						if (位1.length < 1) return;
-						群.forEach((位2, 數2) => {
-							if (數1 == 數2) return;
-							if (位2.length < 1) return;
-							if (模式[色][數1] != 模式[色][數2]) return;
-							檢測確認(位1[0], 位2[0]);
-						});
+		let 檢測確認 = (a, b) => 能否連線(a, b).成功;
+		return 位置.some((群, 色) => {
+			if (模式[色][群.entries()[0][0]] == 0) {
+				return 群.some((位, 數) => 位掃描(位, (i, j) => 檢測確認(位[i], 位[j])));
+			} else {
+				return 群.some((位1, 數1) => {
+					if (位1.length < 1) return false;
+					return 群.some((位2, 數2) => {
+						if (數1 == 數2) return false;
+						if (位2.length < 1) return false;
+						if (模式[色][數1] != 模式[色][數2]) return false;
+						return 檢測確認(位1[0], 位2[0]);
 					});
-				}
-			});
-			return false;
-		} catch (e) { return true; }
+				});
+			}
+		});
 	}
 	function 排除無解狀況() {
 		let 亂數 = [];
@@ -279,33 +276,31 @@ let 麻將 = (() => {
 			音效.select.replay();
 			let 亂數 = [];
 			位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
-			try {
-				do {
-					let 檢測確認 = (a, b) => {
-						if (!能否連線(a, b).成功) return;
-						提示.位置 = [a, b];
-						座標(a).see(true);
-						座標(b).see(true);
-						throw 'ok';
-					};
-					let m1 = 亂數.draw();
-					let [數, 色] = m1.id.split('');
-					if (模式[色][數] == 0) {
-						let 位 = 位置[色][數];
-						位掃描(位, (i, j) => 檢測確認(位[i], 位[j]));
-					} else {
-						位置[色].forEach((位1, 數1) => {
-							if (位1.length < 1) return;
-							位置[色].forEach((位2, 數2) => {
-								if (數1 == 數2) return;
-								if (位2.length < 1) return;
-								if (模式[色][數1] != 模式[色][數2]) return;
-								檢測確認(位1[0], 位2[0]);
-							});
+			while (亂數.length > 0) {
+				let 檢測確認 = (a, b) => {
+					if (!能否連線(a, b).成功) return false;
+					提示.位置 = [a, b];
+					座標(a).see(true);
+					座標(b).see(true);
+					return true;
+				};
+				let m1 = 亂數.draw();
+				let [數, 色] = m1.id.split('');
+				if (模式[色][數] == 0) {
+					let 位 = 位置[色][數];
+					if (位掃描(位, (i, j) => 檢測確認(位[i], 位[j]))) break;
+				} else {
+					if (位置[色].some((位1, 數1) => {
+						if (位1.length < 1) return false;
+						return 位置[色].some((位2, 數2) => {
+							if (數1 == 數2) return false;
+							if (位2.length < 1) return false;
+							if (模式[色][數1] != 模式[色][數2]) return false;
+							return 檢測確認(位1[0], 位2[0]);
 						});
-					}
-				} while (亂數.length > 0);
-			} catch (e) { }
+					})) break;
+				}
+			}
 		},
 		清理() {
 			if (提示.位置.length == 2) {
