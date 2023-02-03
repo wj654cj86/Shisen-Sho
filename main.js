@@ -20,24 +20,9 @@ function range(f, l) {
 	else { for (let i = f; i >= l; i--) { a.push(i); } }
 	return a;
 }
-function range_nf(f, l) {
-	let a = [];
-	if (f < l) { for (let i = f + 1; i <= l; i++) { a.push(i); } }
-	else { for (let i = f - 1; i >= l; i--) { a.push(i); } }
-	return a;
-}
-function range_nl(f, l) {
-	let a = [];
-	if (f < l) { for (let i = f; i < l; i++) { a.push(i); } }
-	else { for (let i = f; i > l; i--) { a.push(i); } }
-	return a;
-}
-function range_nfl(f, l) {
-	let a = [];
-	if (f < l) { for (let i = f + 1; i < l; i++) { a.push(i); } }
-	else { for (let i = f - 1; i > l; i--) { a.push(i); } }
-	return a;
-}
+let range_nf = (f, l) => range(f, l).slice(1);
+let range_nl = (f, l) => range(f, l).slice(0, -1);
+let range_nfl = (f, l) => range(f, l).slice(1, -1);
 
 async function 載入圖示() {
 	let img = await loadimg('麻將/元/中.svg');
@@ -454,7 +439,7 @@ let 麻將 = (() => {
 		打亂,
 		提示,
 		選擇
-	}
+	};
 })();
 
 let 全變 = (() => {
@@ -621,98 +606,95 @@ async function 遊戲開始() {
 	遊戲.show = 1;
 	關卡.num = 0;
 	全變.num = 19;
-	try {
-		while (true) {
-			關卡.num++;
-			全變.num++;
-			提示.num = 5;
-			麻將.張數 = 144;
-			麻將.打亂.開始();
-			時間.開始();
-			// 麻將.提示.顯示();
-			try {
-				while (true) {
-					let 物件 = await Promise.any([
-						...麻將.節點.flatMap(_v => _v.map(v => new Promise(r => v.svg.onmousedown = function (e) { if (e.button === 0) r(this); }))),
-						new Promise(r => 遊戲.onmousedown = function (e) { if (e.button === 2) r(this); }),
-						new Promise(r => 提示圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
-						new Promise(r => 全變圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
-						new Promise(r => 時間.到了 = () => r({ id: '時間' }))
-					]);
-					switch (物件.id) {
-						case '時間':
-							throw '沒有時間';
-							break;
-						case '遊戲':
-							麻將.選擇.取消();
-							break;
-						case '提示圖示':
-							if (麻將.提示.存在()) break;
-							if (提示.num > 0) {
-								提示.num--;
-								時間.扣時();
-								麻將.提示.顯示();
-							}
-							break;
-						case '全變圖示':
-							麻將.選擇.取消();
-							麻將.提示.清理();
-							if (全變.num > 0) {
-								全變.num--;
-								時間.扣時();
-								麻將.打亂.全變();
-							}
-							break;
-						default:
-							if (物件.dataset.麻將) {
-								let { x, y } = 物件.dataset;
-								let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
-								if (回傳值) throw 回傳值;
-							}
-							break;
+	let 遊戲進行 = true;
+	while (遊戲進行) {
+		關卡.num++;
+		全變.num++;
+		提示.num = 5;
+		麻將.張數 = 144;
+		麻將.打亂.開始();
+		時間.開始();
+		// 麻將.提示.顯示();
+		let 中斷訊息 = '';
+		while (中斷訊息 == '') {
+			let 物件 = await Promise.any([
+				...麻將.節點.flatMap(_v => _v.map(v => new Promise(r => v.svg.onmousedown = function (e) { if (e.button === 0) r(this); }))),
+				new Promise(r => 遊戲.onmousedown = function (e) { if (e.button === 2) r(this); }),
+				new Promise(r => 提示圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
+				new Promise(r => 全變圖示.onmousedown = function (e) { if (e.button === 0) r(this); }),
+				new Promise(r => 時間.到了 = () => r({ id: '時間' }))
+			]);
+			switch (物件.id) {
+				case '時間':
+					中斷訊息 = '沒有時間';
+					break;
+				case '遊戲':
+					麻將.選擇.取消();
+					break;
+				case '提示圖示':
+					if (麻將.提示.存在()) break;
+					if (提示.num > 0) {
+						提示.num--;
+						時間.扣時();
+						麻將.提示.顯示();
 					}
-				}
-			} catch (e) {
-				let 增加分數;
-				switch (e) {
-					case '沒有麻將':
-						if (關卡.num < 11) {
-							音效.clear_stage.replay();
-							時間.暫停();
-							增加分數 = Math.floor(時間.剩餘 / 1e3);
-							分數.num += 增加分數;
-							await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n目前分數：${分數.num}分`);
-							時間.結束();
-						} else {
-							音效.clear_stage.replay();
-							時間.暫停();
-							增加分數 = Math.floor(時間.剩餘 / 1e3);
-							分數.num += 增加分數 + 10000;
-							await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n全破再增加10000分\n最終分數：${分數.num}分`);
-							時間.結束();
-							throw '遊戲全破';
-						}
-						break;
-					case '沒有時間':
-						音效.error.replay();
-						時間.結束();
-						增加分數 = (全變.num + 提示.num) * 50;
-						分數.num += 增加分數;
-						await 顯示信息(`時間用完！\n道具分數：${增加分數}分\n總結分數：${分數.num}分`);
-						throw '沒有時間';
-						break;
-					case '沒有全變':
-						音效.error.replay();
-						時間.結束();
-						await 顯示信息(`全變用完！\n總結分數：${分數.num}分`);
-						throw '沒有全變';
-						break;
-					default:
-						break;
-				}
+					break;
+				case '全變圖示':
+					麻將.選擇.取消();
+					麻將.提示.清理();
+					if (全變.num > 0) {
+						全變.num--;
+						時間.扣時();
+						麻將.打亂.全變();
+					}
+					break;
+				default:
+					if (物件.dataset.麻將) {
+						let { x, y } = 物件.dataset;
+						let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
+						if (回傳值) 中斷訊息 = 回傳值;
+					}
+					break;
 			}
 		}
-	} catch (e) { }
+		let 增加分數;
+		switch (中斷訊息) {
+			case '沒有麻將':
+				if (關卡.num < 11) {
+					音效.clear_stage.replay();
+					時間.暫停();
+					增加分數 = Math.floor(時間.剩餘 / 1e3);
+					分數.num += 增加分數;
+					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n目前分數：${分數.num}分`);
+					時間.結束();
+				} else {
+					音效.clear_stage.replay();
+					時間.暫停();
+					增加分數 = Math.floor(時間.剩餘 / 1e3);
+					分數.num += 增加分數 + 10000;
+					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n全破再增加10000分\n最終分數：${分數.num}分`);
+					時間.結束();
+					遊戲進行 = false;
+				}
+				break;
+			case '沒有時間':
+				音效.error.replay();
+				時間.結束();
+				增加分數 = (全變.num + 提示.num) * 50;
+				分數.num += 增加分數;
+				await 顯示信息(`時間用完！\n道具分數：${增加分數}分\n總結分數：${分數.num}分`);
+				遊戲進行 = false;
+				break;
+			case '沒有全變':
+				音效.error.replay();
+				時間.結束();
+				await 顯示信息(`全變用完！\n總結分數：${分數.num}分`);
+				遊戲進行 = false;
+				break;
+			default:
+				break;
+		}
+	}
 	遊戲.show = 0;
 	主頁.show = 1;
 }
