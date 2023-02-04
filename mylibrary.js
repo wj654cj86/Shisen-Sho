@@ -1,6 +1,27 @@
 Number.prototype.padStart = function (...args) { return this.toString().padStart(...args); };
 Number.prototype.padEnd = function (...args) { return this.toString().padEnd(...args); };
 
+Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
+
+Object.prototype.entries = function () { return Object.entries(this); };
+Object.prototype.forEach = function (cb = () => { }) { this.entries().forEach(([k, v]) => cb(v, k)); };
+Object.prototype.some = function (cb = () => { }) { return this.entries().some(([k, v]) => cb(v, k)); };
+
+Audio.prototype.replay = function () {
+	this.currentTime = 0;
+	this.play();
+};
+
+function range(f, l) {
+	let a = [];
+	if (f < l) { for (let i = f; i <= l; i++) { a.push(i); } }
+	else { for (let i = f; i >= l; i--) { a.push(i); } }
+	return a;
+}
+let range_nf = (f, l) => range(f, l).slice(1);
+let range_nl = (f, l) => range(f, l).slice(0, -1);
+let range_nfl = (f, l) => range(f, l).slice(1, -1);
+
 function setCookie(key, value) {
 	let d = new Date();
 	d.setTime(d.getTime() + (100 * 24 * 60 * 60 * 1000));
