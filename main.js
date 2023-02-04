@@ -117,19 +117,9 @@ let 麻將 = (() => {
 		牌區.append(mn.svg);
 		return mn;
 	}
-	function 一樣(a, b) {
-		switch (座標(a).mod) {
-			case 0:
-				return 座標(a).id == 座標(b).id;
-			case 1:
-			case 2:
-				return 座標(a).mod == 座標(b).mod;
-			default:
-				return false;
-		}
-	}
 
 	let 位置相同 = (a, b) => a.x == b.x && a.y == b.y;
+	let 一樣 = (a, b) => 座標(a).mod == 0 ? 座標(a).id == 座標(b).id : 座標(a).mod == 座標(b).mod;
 
 	function 能否連線(a, b) {
 		let 有麻將 = ({ x, y }) => { if (節點[y][x].id != '無') throw 'no'; };
@@ -232,6 +222,7 @@ let 麻將 = (() => {
 	}
 	let 打亂 = {
 		開始() {
+			張數 = 144;
 			let 亂數 = [];
 			模式掃描((色, 數, 模) => {
 				位置[色][數] = [];
@@ -393,15 +384,15 @@ let 麻將 = (() => {
 					提示.清理();
 					座標(b).lock(true);
 					張數 -= 2;
-					分數.num += 20;
+					數據.分數 += 20;
 					await 連線(a, ...結果.轉角, b);
 					座標(a).id = '無';
 					座標(b).id = '無';
 					if (張數) {
-						移動(關卡.num);
+						移動(數據.關卡);
 						if (!檢查有解()) {
-							if (全變.num > 0) {
-								全變.num--;
+							if (數據.全變 > 0) {
+								數據.全變--;
 								打亂.全變();
 							} else {
 								return '沒有全變';
@@ -428,8 +419,6 @@ let 麻將 = (() => {
 	};
 	return {
 		節點,
-		get 張數() { return 張數; },
-		set 張數(n) { 張數 = n; },
 		初始化,
 		打亂,
 		提示,
@@ -437,70 +426,43 @@ let 麻將 = (() => {
 	};
 })();
 
-let 全變 = (() => {
-	let _num = 0;
-	return {
-		set num(__num) {
-			_num = __num;
-			全變數量svg.querySelector(`text`).innerHTML = __num;
-			if (_num == 0) {
-				全變圖示.setAttribute('opacity', 0);
-				全變數量svg.setAttribute('opacity', 0);
-			} else {
-				全變圖示.removeAttribute('opacity');
-				全變數量svg.removeAttribute('opacity');
+let 數據 = (() => {
+	let 物件 = {};
+	function 道具(名稱, 格式 = n => n) {
+		let 數量 = 0;
+		let 數量text = document.querySelector(`#${名稱}svg>text`);
+		let 圖示 = document.querySelector(`#${名稱}圖示`);
+		Object.defineProperty(物件, 名稱, {
+			get: () => 數量,
+			set: _數量 => {
+				數量 = _數量;
+				數量text.innerHTML = 格式(數量);
+				if (數量 <= 0) {
+					數量text.setAttribute('opacity', 0);
+					圖示.setAttribute('opacity', 0);
+				} else {
+					數量text.removeAttribute('opacity');
+					圖示.removeAttribute('opacity');
+				}
 			}
-		},
-		get num() {
-			return _num;
-		}
-	};
-})();
-
-let 提示 = (() => {
-	let _num = 0;
-	return {
-		set num(__num) {
-			_num = __num;
-			提示數量svg.querySelector(`text`).innerHTML = __num;
-			if (_num == 0) {
-				提示圖示.setAttribute('opacity', 0);
-				提示數量svg.setAttribute('opacity', 0);
-			} else {
-				提示圖示.removeAttribute('opacity');
-				提示數量svg.removeAttribute('opacity');
+		});
+	}
+	function 數值(名稱, 格式 = n => n) {
+		let 數量 = 0;
+		let 數量text = document.querySelector(`#${名稱}svg>text`);
+		Object.defineProperty(物件, 名稱, {
+			get: () => 數量,
+			set: _數量 => {
+				數量 = _數量;
+				數量text.innerHTML = 格式(數量);
 			}
-		},
-		get num() {
-			return _num;
-		}
-	};
-})();
-
-let 分數 = (() => {
-	let _num = 0;
-	return {
-		set num(__num) {
-			_num = __num;
-			分數svg.querySelector(`text`).innerHTML = __num;
-		},
-		get num() {
-			return _num;
-		}
-	};
-})();
-
-let 關卡 = (() => {
-	let _num = 0;
-	return {
-		set num(__num) {
-			_num = __num;
-			關卡svg.querySelector(`text`).innerHTML = 'Level - ' + __num;
-		},
-		get num() {
-			return _num;
-		}
-	};
+		});
+	}
+	道具('全變');
+	道具('提示');
+	數值('分數');
+	數值('關卡', n => 'Level - ' + n);
+	return 物件;
 })();
 
 let 時間 = (() => {
@@ -509,21 +471,22 @@ let 時間 = (() => {
 	let 剩餘 = 0;
 	let 計時器指標 = null;
 	let 模式 = '結束';
+	let 設定時間條 = t => 時間條.setAttribute('width', Math.floor(t / 1e3));
 	let 到了 = () => { };
 	function 計時器函數() {
 		let t = 總時間 - (Date.now() - 開始點);
 		if (t <= 0) {
-			時間條.setAttribute('width', 0);
+			設定時間條(0);
 			到了();
 		} else {
-			時間條.setAttribute('width', Math.floor(t / 1e3));
+			設定時間條(t);
 		}
 	}
 	function 開始() {
 		switch (模式) {
 			case '結束':
 				模式 = '開始';
-				時間條.setAttribute('width', Math.floor(總時間 / 1e3));
+				設定時間條(總時間);
 				開始點 = Date.now();
 				計時器指標 = setInterval(計時器函數, 500);
 				break;
@@ -541,6 +504,7 @@ let 時間 = (() => {
 		if (計時器指標 !== null) clearInterval(計時器指標);
 	}
 	function 暫停() {
+		if (模式 == '結束') return;
 		模式 = '暫停';
 		剩餘 = 總時間 - (Date.now() - 開始點);
 		if (計時器指標 !== null) clearInterval(計時器指標);
@@ -595,18 +559,17 @@ async function 顯示信息(str) {
 }
 
 async function 遊戲開始() {
-	麻將.選擇.位置 = null;
-	分數.num = 0;
+	麻將.選擇.取消();
+	數據.分數 = 0;
 	主頁.show = 0;
 	遊戲.show = 1;
-	關卡.num = 0;
-	全變.num = 19;
+	數據.關卡 = 0;
+	數據.全變 = 19;
 	let 遊戲進行 = true;
 	while (遊戲進行) {
-		關卡.num++;
-		全變.num++;
-		提示.num = 5;
-		麻將.張數 = 144;
+		數據.關卡++;
+		數據.全變++;
+		數據.提示 = 5;
 		麻將.打亂.開始();
 		時間.開始();
 		// 麻將.提示.顯示();
@@ -628,8 +591,8 @@ async function 遊戲開始() {
 					break;
 				case '提示圖示':
 					if (麻將.提示.存在()) break;
-					if (提示.num > 0) {
-						提示.num--;
+					if (數據.提示 > 0) {
+						數據.提示--;
 						時間.扣時();
 						麻將.提示.顯示();
 					}
@@ -637,8 +600,8 @@ async function 遊戲開始() {
 				case '全變圖示':
 					麻將.選擇.取消();
 					麻將.提示.清理();
-					if (全變.num > 0) {
-						全變.num--;
+					if (數據.全變 > 0) {
+						數據.全變--;
 						時間.扣時();
 						麻將.打亂.全變();
 					}
@@ -655,35 +618,35 @@ async function 遊戲開始() {
 		let 增加分數;
 		switch (中斷訊息) {
 			case '沒有麻將':
-				if (關卡.num < 11) {
-					音效.clear_stage.replay();
+				if (數據.關卡 < 11) {
 					時間.暫停();
+					音效.clear_stage.replay();
 					增加分數 = Math.floor(時間.剩餘 / 1e3);
-					分數.num += 增加分數;
-					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n目前分數：${分數.num}分`);
+					數據.分數 += 增加分數;
+					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n目前分數：${數據.分數}分`);
 					時間.結束();
 				} else {
-					音效.clear_stage.replay();
 					時間.暫停();
+					音效.clear_stage.replay();
 					增加分數 = Math.floor(時間.剩餘 / 1e3);
-					分數.num += 增加分數 + 10000;
-					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n全破再增加10000分\n最終分數：${分數.num}分`);
+					數據.分數 += 增加分數 + 10000;
+					await 顯示信息(`恭喜過關！\n剩餘時間：${增加分數}秒\n全破再增加10000分\n最終分數：${數據.分數}分`);
 					時間.結束();
 					遊戲進行 = false;
 				}
 				break;
 			case '沒有時間':
-				音效.error.replay();
 				時間.結束();
-				增加分數 = (全變.num + 提示.num) * 50;
-				分數.num += 增加分數;
-				await 顯示信息(`時間用完！\n道具分數：${增加分數}分\n總結分數：${分數.num}分`);
+				音效.error.replay();
+				增加分數 = (數據.全變 + 數據.提示) * 50;
+				數據.分數 += 增加分數;
+				await 顯示信息(`時間用完！\n道具分數：${增加分數}分\n總結分數：${數據.分數}分`);
 				遊戲進行 = false;
 				break;
 			case '沒有全變':
-				音效.error.replay();
 				時間.結束();
-				await 顯示信息(`全變用完！\n總結分數：${分數.num}分`);
+				音效.error.replay();
+				await 顯示信息(`全變用完！\n總結分數：${數據.分數}分`);
 				遊戲進行 = false;
 				break;
 			default:
@@ -701,5 +664,5 @@ document.body.oncontextmenu = () => false;
 載入封面();
 await 麻將.初始化();
 玩.onmousedown = 遊戲開始;
-window.parent.document.body.style.opacity = 1;
+parent.document.body.style.opacity = 1;
 document.body.style.opacity = 1;
