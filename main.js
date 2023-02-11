@@ -4,12 +4,7 @@ import 時間 from "./timer.js";
 import 音效 from "./soundeffect.js";
 import 麻將 from "./mahjong.js";
 
-Object.defineProperty(Node.prototype, 'show', {
-	set: function (s) {
-		this.style.opacity = s;
-		this.style.zIndex = s;
-	}
-});
+Object.defineProperty(Node.prototype, 'show', { set: function (s) { this.style.display = s == 1 ? 'inline' : 'none'; } });
 
 async function 載入圖示() {
 	let img = await loadimg('麻將/元/中.svg');
@@ -153,7 +148,6 @@ document.body.oncontextmenu = () => false;
 遊戲.show = 0;
 載入圖示();
 載入封面();
-await 麻將.初始化();
 玩.onmousedown = 遊戲開始;
 parent.document.body.style.opacity = 1;
 document.body.style.opacity = 1;
