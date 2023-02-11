@@ -32,26 +32,10 @@ function 建立節點(i, j) {
 		_id: '無',
 		mod: -1,
 		img: text2svg(`<use/>`),
-		seerect: text2svg(`<use href="#框線" fill="none"/>`),
-		rect: text2svg(`<use href="#框線" fill="none"/>`),
-		move: text2svg(`<use href="#框線" fill="none"/>`),
+		rect: text2svg(`<use href="#框線" class="rect"/>`),
 		svg: text2svg(`<g data-麻將="true" style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`),
-		lock(b) {
-			if (b) {
-				this.rect.setAttribute('fill', '#7f00ff55');
-				this.seerect.setAttribute('opacity', 0);
-			} else {
-				this.rect.setAttribute('fill', 'none');
-				this.seerect.removeAttribute('opacity');
-			}
-		},
-		see(b) {
-			if (b) {
-				this.seerect.setAttribute('fill', '#ff7f0055');
-			} else {
-				this.seerect.setAttribute('fill', 'none');
-			}
-		},
+		lock(b) { this.rect.classList[b ? 'add' : 'remove']('lock'); },
+		see(b) { this.rect.classList[b ? 'add' : 'remove']('see'); },
 		set id(_id) {
 			this._id = _id;
 			this.see(false);
@@ -71,9 +55,7 @@ function 建立節點(i, j) {
 			return this._id;
 		}
 	};
-	mn.svg.onmousemove = () => mn.move.setAttribute('fill', '#00bf0055');
-	mn.svg.onmouseleave = () => mn.move.setAttribute('fill', 'none');
-	mn.svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), mn.img, mn.seerect, mn.rect, mn.move);
+	mn.svg.append(mn.img, mn.rect, text2svg(`<use href="#框線" class="move"/>`));
 	牌區.append(mn.svg);
 	return mn;
 }
@@ -194,7 +176,6 @@ let 打亂 = {
 		});
 		版面掃描((i, j) => {
 			節點[i][j].id = 亂數.draw();
-			節點[i][j].move.setAttribute('fill', 'none');
 			let [數, 色] = 節點[i][j].id.split('');
 			位置[色][數].push({ x: j, y: i });
 		});
@@ -377,7 +358,7 @@ let 選擇 = {
 	}
 };
 
-模式掃描((色, 數, 模) => 預設.append(text2svg(`<image id="${數}${色}" width="60" height="80" href="麻將/${色}/${數}.svg"/>`)));
+模式掃描((色, 數, 模) => 預設.append(text2svg(`<g id="${數}${色}"><use href="#框線" fill="#f5f5f5"/><image width="60" height="80" href="麻將/${色}/${數}.svg"/></g>`)));
 range_nl(0, 高度).forEach(i => { 節點[i] = []; range_nl(0, 寬度).forEach(j => 節點[i][j] = 建立節點(i, j)) });
 
 export default {

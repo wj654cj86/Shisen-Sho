@@ -27,3 +27,21 @@ text {
 g[data-麻將="true"] {
 	transform: translate(calc(var(--x) * 60px), calc(var(--y) * 80px));
 }
+
+g[data-麻將="true"]>.move,
+g[data-麻將="true"]>.rect {
+	fill: none;
+}
+
+g[data-麻將="true"]:hover>.move {
+	fill: #00bf0055;
+}
+
+g[data-麻將="true"]>.rect.see {
+	fill: #ff7f0055;
+}
+
+g[data-麻將="true"]>.rect.lock,
+g[data-麻將="true"]>.rect.lock.see {
+	fill: #7f00ff55;
+}
