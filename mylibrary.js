@@ -1,7 +1,12 @@
 Number.prototype.padStart = function (...args) { return this.toString().padStart(...args); };
 Number.prototype.padEnd = function (...args) { return this.toString().padEnd(...args); };
 
+String.prototype.Clear0 = function () { return this.replace(/\.0*$|(?<=\.\d*[1-9])0+$/, ''); };
+String.prototype.forEach = function (cb = () => { }) { this.split(/(?:)/u).forEach(cb); };
+
+Array.prototype.random = function () { return this.length <= 0 ? null : this[Math.floor(Math.random() * this.length)]; };
 Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
+Array.prototype.promiseMap = function (cb = async v => v) { return Promise.all(this.map(cb)) };
 
 Object.prototype.entries = function () { return Object.entries(this); };
 Object.prototype.forEach = function (cb = () => { }) { this.entries().forEach(([k, v]) => cb(v, k)); };
@@ -34,15 +39,11 @@ function getCookie(key) {
 }
 
 function obj2get(obj) {
-	let get = Object.entries(obj).map(([k, v]) => k + '=' + v).join('&');
+	let get = new URLSearchParams(obj).toString();
 	return get != '' ? '?' + get : '';
 }
 
-function url2obj() {
-	let strUrl = location.search;
-	if (strUrl.indexOf('?') == -1) return {};
-	return Object.fromEntries(strUrl.split("?")[1].split("&").map(v => v.trim().split('=')));
-}
+let url2obj = () => Object.fromEntries(new URLSearchParams(location.search));
 
 function obj2url(obj) {
 	window.history.pushState({}, 0, location.href.split('?')[0] + obj2get(obj) + location.hash);
@@ -71,7 +72,7 @@ function text2html(text) {
 
 let text2svg = text => (new DOMParser()).parseFromString(
 	`<?xml version="1.0" encoding="UTF-8"?>`
-	+ `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${text.replace(/^\s*<\?[\w\s\"\'\.\-\=]*\?>\s*/g, '')}</svg>`,
+	+ `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${text.replace(/^\s*<\?[^\?]*\?>\s*/g, '')}</svg>`,
 	"image/svg+xml").querySelector('svg').firstChild;
 
 let getimgsize = src => new Promise((res, rej) => {

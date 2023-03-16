@@ -7,14 +7,12 @@ import 麻將 from "./mahjong.js";
 Object.defineProperty(Node.prototype, 'show', { set: function (s) { this.style.display = s == 1 ? 'inline' : 'none'; } });
 
 async function 載入圖示() {
-	let img = await loadimg('麻將/元/中.svg');
-	let canvas = text2html(`<canvas width="400" height="400"/>`);
-	let ctx = canvas.getContext("2d");
-	ctx.rect(50, 0, 300, 400);
-	ctx.fillStyle = '#f5f5f5';
-	ctx.fill();
-	ctx.drawImage(img, 50, 0);
-	parent.document.querySelector('[rel="icon"]').href = canvas.toDataURL();
+	parent.document.querySelector('[rel="icon"]').href = svgtexttourl(
+		`<svg viewBox="-50 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">`
+		+ `<rect x="5" y="5" rx="15" ry="15" fill="#f5f5f5" width="290" height="390" />`
+		+ await loadfile('text', '麻將/元/中.svg')
+		+ `</svg>`
+	);
 }
 
 async function 載入封面() {
@@ -93,7 +91,7 @@ async function 遊戲開始() {
 					}
 					break;
 				default:
-					if (物件.dataset.麻將) {
+					if (物件.parentNode.id == '牌區') {
 						let { x, y } = 物件.dataset;
 						let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
 						if (回傳值) 中斷訊息 = 回傳值;

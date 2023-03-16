@@ -24,24 +24,24 @@ text {
 	dominant-baseline: middle;
 }
 
-g[data-麻將="true"] {
+#牌區>g {
 	transform: translate(calc(var(--x) * 60px), calc(var(--y) * 80px));
 }
 
-g[data-麻將="true"]>.move,
-g[data-麻將="true"]>.rect {
+#牌區>g>.move,
+#牌區>g>.rect {
 	fill: none;
 }
 
-g[data-麻將="true"]:hover>.move {
+#牌區>g:hover>.move {
 	fill: #00bf0055;
 }
 
-g[data-麻將="true"]>.rect.see {
+#牌區>g>.rect.see {
 	fill: #ff7f0055;
 }
 
-g[data-麻將="true"]>.rect.lock,
-g[data-麻將="true"]>.rect.lock.see {
+#牌區>g>.rect.lock,
+#牌區>g>.rect.lock.see {
 	fill: #7f00ff55;
 }

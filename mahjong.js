@@ -28,36 +28,34 @@ let 版面掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).fo
 let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, 位.length).some(j => cb(i, j)));
 
 function 建立節點(i, j) {
-	let mn = {
-		_id: '無',
-		mod: -1,
-		img: text2svg(`<use/>`),
-		rect: text2svg(`<use href="#框線" class="rect"/>`),
-		svg: text2svg(`<g data-麻將="true" style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`),
-		lock(b) { this.rect.classList[b ? 'add' : 'remove']('lock'); },
-		see(b) { this.rect.classList[b ? 'add' : 'remove']('see'); },
+	let id = '無';
+	let mod = -1;
+	let img = text2svg(`<use/>`);
+	let rect = text2svg(`<use href="#框線" class="rect"/>`);
+	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`);
+	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
+	let see = b => rect.classList[b ? 'add' : 'remove']('see');
+	svg.append(img, rect, text2svg(`<use href="#框線" class="move"/>`));
+	牌區.append(svg);
+	return {
+		svg, lock, see,
+		get mod() { return mod; },
 		set id(_id) {
-			this._id = _id;
-			this.see(false);
-			this.lock(false);
-			if (_id == '無') {
-				this.mod = -1;
-				this.img.removeAttribute('href');
-				this.svg.setAttribute('opacity', 0);
+			id = _id;
+			see(false);
+			lock(false);
+			img.setAttribute('href', `#${id}`);
+			if (id == '無') {
+				mod = -1;
+				svg.setAttribute('opacity', 0);
 			} else {
-				let [數, 色] = _id.split('');
-				this.mod = 模式[色][數];
-				this.img.setAttribute('href', `#${_id}`);
-				this.svg.removeAttribute('opacity');
+				let [數, 色] = id.split('');
+				mod = 模式[色][數];
+				svg.removeAttribute('opacity');
 			}
 		},
-		get id() {
-			return this._id;
-		}
+		get id() { return id; }
 	};
-	mn.svg.append(mn.img, mn.rect, text2svg(`<use href="#框線" class="move"/>`));
-	牌區.append(mn.svg);
-	return mn;
 }
 
 let 位置相同 = (a, b) => a.x == b.x && a.y == b.y;
