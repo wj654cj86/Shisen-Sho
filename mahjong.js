@@ -30,12 +30,12 @@ let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, �
 function 建立節點(i, j) {
 	let id = '無';
 	let mod = -1;
-	let img = text2svg(`<use/>`);
+	let img = text2svg(`<use transform="scale(0.2)"/>`);
 	let rect = text2svg(`<use href="#框線" class="rect"/>`);
 	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`);
 	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
 	let see = b => rect.classList[b ? 'add' : 'remove']('see');
-	svg.append(img, rect, text2svg(`<use href="#框線" class="move"/>`));
+	svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), img, rect, text2svg(`<use href="#框線" class="move"/>`));
 	牌區.append(svg);
 	return {
 		svg, lock, see,
@@ -355,8 +355,8 @@ let 選擇 = {
 		選擇.位置 = null;
 	}
 };
-
-模式掃描((色, 數, 模) => 預設.append(text2svg(`<g id="${數}${色}"><use href="#框線" fill="#f5f5f5"/><image width="60" height="80" href="麻將/${色}/${數}.svg"/></g>`)));
+預設.append(text2svg(await loadfile('text', '麻將.svg')));
+// 模式掃描((色, 數, 模) => 預設.append(text2svg(`<g id="${數}${色}"><use href="#框線" fill="#f5f5f5"/><image width="60" height="80" href="麻將/${色}/${數}.svg"/></g>`)));
 range_nl(0, 高度).forEach(i => { 節點[i] = []; range_nl(0, 寬度).forEach(j => 節點[i][j] = 建立節點(i, j)) });
 
 export default {
