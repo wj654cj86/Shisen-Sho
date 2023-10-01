@@ -355,8 +355,8 @@ let 選擇 = {
 		選擇.位置 = null;
 	}
 };
+
 預設.append(text2svg(await loadfile('text', '麻將.svg')));
-// 模式掃描((色, 數, 模) => 預設.append(text2svg(`<g id="${數}${色}"><use href="#框線" fill="#f5f5f5"/><image width="60" height="80" href="麻將/${色}/${數}.svg"/></g>`)));
 range_nl(0, 高度).forEach(i => { 節點[i] = []; range_nl(0, 寬度).forEach(j => 節點[i][j] = 建立節點(i, j)) });
 
 export default {
