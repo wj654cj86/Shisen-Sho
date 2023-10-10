@@ -8,10 +8,10 @@ Object.defineProperty(Node.prototype, 'show', { set: function (s) { this.style.d
 
 async function 載入圖示() {
 	parent.document.querySelector('[rel="icon"]').href = svgtext2url(
-		`<svg viewBox="-50 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">`
-		+ `<rect x="5" y="5" rx="15" ry="15" fill="#f5f5f5" width="290" height="390" />`
-		+ await loadfile('text', '麻將/元/中.svg')
-		+ `</svg>`
+		`<svg viewBox="-50 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+		<rect x="5" y="5" rx="15" ry="15" fill="#f5f5f5" width="290" height="390" />
+		${xml2text(document.querySelector('#中元'))}
+		</svg>`
 	);
 }
 
@@ -56,7 +56,7 @@ async function 遊戲開始() {
 		數據.提示 = 5;
 		麻將.打亂.開始();
 		時間.開始();
-		// 麻將.提示.顯示();
+		麻將.測試();
 		let 中斷訊息 = '';
 		while (中斷訊息 == '') {
 			let 物件 = await Promise.any([

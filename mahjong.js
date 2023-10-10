@@ -22,8 +22,8 @@ let 節點 = [];
 let 座標 = ({ x, y }) => 節點[y][x];
 let 張數 = 0;
 
-let 模式掃描 = cb => 模式.forEach((群, 色) => 群.forEach((模, 數) => cb(色, 數, 模)));
-let 位置掃描 = cb => 位置.forEach((群, 色) => 群.forEach((位, 數) => cb(色, 數, 位)));
+let 模式掃描 = cb => Object.forEach(模式, (群, 色) => Object.forEach(群, (模, 數) => cb(色, 數, 模)));
+let 位置掃描 = cb => Object.forEach(位置, (群, 色) => Object.forEach(群, (位, 數) => cb(色, 數, 位)));
 let 版面掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
 let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, 位.length).some(j => cb(i, j)));
 
@@ -125,13 +125,13 @@ async function 連線(...args) {
 }
 function 檢查有解() {
 	let 檢測確認 = (a, b) => 能否連線(a, b).成功;
-	return 位置.some((群, 色) => {
-		if (模式[色][群.entries()[0][0]] == 0) {
-			return 群.some((位, 數) => 位掃描(位, (i, j) => 檢測確認(位[i], 位[j])));
+	return Object.some(位置, (群, 色) => {
+		if (模式[色][Object.entries(群)[0][0]] == 0) {
+			return Object.some(群, (位, 數) => 位掃描(位, (i, j) => 檢測確認(位[i], 位[j])));
 		} else {
-			return 群.some((位1, 數1) => {
+			return Object.some(群, (位1, 數1) => {
 				if (位1.length < 1) return false;
-				return 群.some((位2, 數2) => {
+				return Object.some(群, (位2, 數2) => {
 					if (數1 == 數2) return false;
 					if (位2.length < 1) return false;
 					if (模式[色][數1] != 模式[色][數2]) return false;
@@ -220,9 +220,9 @@ let 提示 = {
 				let 位 = 位置[色][數];
 				if (位掃描(位, (i, j) => 檢測確認(位[i], 位[j]))) break;
 			} else {
-				if (位置[色].some((位1, 數1) => {
+				if (Object.some(位置[色], (位1, 數1) => {
 					if (位1.length < 1) return false;
-					return 位置[色].some((位2, 數2) => {
+					return Object.some(位置[色], (位2, 數2) => {
 						if (數1 == 數2) return false;
 						if (位2.length < 1) return false;
 						if (模式[色][數1] != 模式[色][數2]) return false;
@@ -301,6 +301,10 @@ function 移動(關卡) {
 	節點轉位置();
 }
 
+function 測試() {
+	// 提示.顯示();
+}
+
 let 選擇 = {
 	位置: null,
 	async 記錄(x, y) {
@@ -336,7 +340,7 @@ let 選擇 = {
 							return '沒有全變';
 						}
 					}
-					// 提示.顯示();
+					測試();
 				} else {
 					return '沒有麻將';
 				}
@@ -363,5 +367,6 @@ export default {
 	節點,
 	打亂,
 	提示,
-	選擇
+	選擇,
+	測試
 };

@@ -8,9 +8,8 @@ Array.prototype.random = function () { return this.length <= 0 ? null : this[Mat
 Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
 Array.prototype.promiseMap = function (cb = async v => v) { return Promise.all(this.map(cb)) };
 
-Object.prototype.entries = function () { return Object.entries(this); };
-Object.prototype.forEach = function (cb = () => { }) { this.entries().forEach(([k, v]) => cb(v, k)); };
-Object.prototype.some = function (cb = () => { }) { return this.entries().some(([k, v]) => cb(v, k)); };
+Object.forEach = (b, cb) => Object.entries(b).forEach(([k, v]) => cb(v, k));
+Object.some = (b, cb) => Object.entries(b).some(([k, v]) => cb(v, k));
 
 Audio.prototype.replay = function () {
 	this.currentTime = 0;
@@ -46,9 +45,7 @@ function obj2get(obj) {
 let url2obj = () => Object.fromEntries(new URLSearchParams(location.search));
 let obj2url = obj => window.history.pushState({}, 0, location.href.split('?')[0] + obj2get(obj) + location.hash);
 
-let promise = (cb, ...args) => new Promise(r => cb(...args, r));
 let sleep = ms => new Promise(r => setTimeout(r, ms));
-
 let blob2url = URL.createObjectURL;
 let loadfile = (type, url) => fetch(url).then(r => r[type]());
 let loadsound = url => loadfile('blob', url).then(blob => new Audio(blob2url(blob)));
