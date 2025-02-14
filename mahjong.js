@@ -153,7 +153,7 @@ function 排除無解狀況() {
 			let p1 = 位1.findIndex(v => !位置相同(v, m1.位));
 			let [數2, 色2] = m2.id.split('');
 			let 位2 = 位置[色2][數2];
-			let p2 = 位2.findIndex(v => !位置相同(v, m2.位));
+			let p2 = 位2.findIndex(v => 位置相同(v, m2.位));
 			let [a, b] = [位1[p1], 位2[p2]] = [位2[p2], 位1[p1]];
 			[座標(a).id, 座標(b).id] = [座標(b).id, 座標(a).id];
 			return;
