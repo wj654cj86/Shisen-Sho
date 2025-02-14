@@ -142,6 +142,7 @@ function 檢查有解() {
 	});
 }
 function 排除無解狀況() {
+	if (檢查有解()) return;
 	let 亂數 = [];
 	位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
 	let m1 = 亂數.draw();
@@ -177,7 +178,7 @@ let 打亂 = {
 			let [數, 色] = 節點[i][j].id.split('');
 			位置[色][數].push({ x: j, y: i });
 		});
-		if (!檢查有解()) 排除無解狀況();
+		排除無解狀況();
 	},
 	全變() {
 		音效.change.replay();
@@ -187,13 +188,12 @@ let 打亂 = {
 			位置[色][數] = [];
 		});
 		版面掃描((i, j) => {
-			if (節點[i][j].id != '無') {
-				節點[i][j].id = 亂數.draw();
-				let [數, 色] = 節點[i][j].id.split('');
-				位置[色][數].push({ x: j, y: i });
-			}
+			if (節點[i][j].id == '無') return;
+			節點[i][j].id = 亂數.draw();
+			let [數, 色] = 節點[i][j].id.split('');
+			位置[色][數].push({ x: j, y: i });
 		});
-		if (!檢查有解()) 排除無解狀況();
+		排除無解狀況();
 	}
 };
 let 提示 = {
@@ -251,10 +251,9 @@ let 提示 = {
 function 節點轉位置() {
 	位置掃描((色, 數, 位) => 位置[色][數] = []);
 	版面掃描((i, j) => {
-		if (節點[i][j].id != '無') {
-			let [數, 色] = 節點[i][j].id.split('');
-			位置[色][數].push({ x: j, y: i });
-		}
+		if (節點[i][j].id == '無') return;
+		let [數, 色] = 節點[i][j].id.split('');
+		位置[色][數].push({ x: j, y: i });
 	});
 }
 
@@ -262,11 +261,10 @@ function 位移x(y, 開始, 結束) {
 	range(開始, 結束).forEach(x => {
 		if (節點[y][x].id != '無') return;
 		range_nf(x, 結束).find(_x => {
-			if (節點[y][_x].id != '無') {
-				節點[y][x].id = 節點[y][_x].id;
-				節點[y][_x].id = '無';
-				return true;
-			}
+			if (節點[y][_x].id == '無') return false;
+			節點[y][x].id = 節點[y][_x].id;
+			節點[y][_x].id = '無';
+			return true;
 		});
 	});
 }
@@ -274,11 +272,10 @@ function 位移y(x, 開始, 結束) {
 	range(開始, 結束).forEach(y => {
 		if (節點[y][x].id != '無') return;
 		range_nf(y, 結束).find(_y => {
-			if (節點[_y][x].id != '無') {
-				節點[y][x].id = 節點[_y][x].id;
-				節點[_y][x].id = '無';
-				return true;
-			}
+			if (節點[_y][x].id == '無') return false;
+			節點[y][x].id = 節點[_y][x].id;
+			節點[_y][x].id = '無';
+			return true;
 		});
 	});
 }
