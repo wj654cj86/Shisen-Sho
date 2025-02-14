@@ -2,7 +2,7 @@ Number.prototype.padStart = function (...args) { return this.toString().padStart
 Number.prototype.padEnd = function (...args) { return this.toString().padEnd(...args); };
 
 String.prototype.Clear0 = function () { return this.replace(/\.0*$|(?<=\.\d*[1-9])0+$/, ''); };
-String.prototype.forEach = function (cb = () => { }) { this.split(/(?:)/u).forEach(cb); };
+String.prototype.forEach = function (cb = () => { }) { [...this].forEach(cb); };
 
 Array.prototype.random = function () { return this.length <= 0 ? null : this[Math.floor(Math.random() * this.length)]; };
 Array.prototype.draw = function () { return this.length <= 0 ? null : this.splice(Math.floor(Math.random() * this.length), 1)[0]; };
@@ -95,7 +95,12 @@ let svgtext2url = text => blob2url(new Blob([text], { type: 'image/svg+xml' }));
 let svg2url = svg => svgtext2url(xml2text(svg));
 let svg2img = svg => loadimg(svg2url(svg));
 
-let svg2pngurl = svg => svg2img(svg).then(img => new Promise(r => img2canvas(img).toBlob(blob => r(blob2url(blob)))));
+let canvas2blob = canvas => new Promise(r => canvas.toBlob(blob => r(blob)));
+let canvas2url = canvas => canvas2blob(canvas).then(blob => blob2url(blob));
+let canvas2jpgblob = (canvas, quality) => new Promise(r => canvas.toBlob(blob => r(blob), 'image/jpeg', quality));
+let canvas2jpgurl = (canvas, quality) => canvas2jpgblob(canvas, quality).then(blob => blob2url(blob));
+
+let svg2pngurl = svg => svg2img(svg).then(img => canvas2url(img2canvas(img)));
 let png2base64 = src => loadimg(src).then(img => img2canvas(img).toDataURL());
 
 function startDownload(url, name) {

@@ -31,7 +31,7 @@ async function 載入封面() {
 		a[i + 2] = b;
 	}
 	ctx.putImageData(imgdt, 0, 0);
-	封面反向.setAttribute('href', await new Promise(r => canvas.toBlob(blob => r(blob2url(blob)))));
+	封面反向.setAttribute('href', await canvas2url(canvas));
 }
 
 async function 顯示信息(str) {
@@ -82,9 +82,9 @@ async function 遊戲開始() {
 					}
 					break;
 				case '全變圖示':
-					麻將.選擇.取消();
-					麻將.提示.清理();
 					if (數據.全變 > 0) {
+						麻將.選擇.取消();
+						麻將.提示.清理();
 						數據.全變--;
 						時間.扣時();
 						麻將.打亂.全變();
