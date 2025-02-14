@@ -150,8 +150,20 @@ function 排除無解狀況() {
 		let m2 = 亂數.draw();
 		if (能否連線(m1.位, m2.位).成功) {
 			let [數1, 色1] = m1.id.split('');
-			let 位1 = 位置[色1][數1];
-			let p1 = 位1.findIndex(v => !位置相同(v, m1.位));
+			let 位1, p1;
+			if (模式[色1][數1] == 0) {
+				位1 = 位置[色1][數1];
+				p1 = 位1.findIndex(v => !位置相同(v, m1.位));
+			} else {
+				Object.entries(位置[色1]).findIndex(([數3, 位3]) => {
+					if (位3.length == 0) return false;
+					if (模式[色1][數1] != 模式[色1][數3]) return false;
+					if (位置相同(位3[0], m1.位)) return false;
+					位1 = 位3;
+					p1 = 0;
+					return true;
+				});
+			}
 			let [數2, 色2] = m2.id.split('');
 			let 位2 = 位置[色2][數2];
 			let p2 = 位2.findIndex(v => 位置相同(v, m2.位));
