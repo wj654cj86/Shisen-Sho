@@ -155,10 +155,10 @@ function 排除無解狀況() {
 				位1 = 位置[色1][數1];
 				p1 = 位1.findIndex(v => !位置相同(v, m1.位));
 			} else {
-				Object.entries(位置[色1]).findIndex(([數3, 位3]) => {
-					if (位3.length == 0) return false;
+				Object.some(位置[色1], (位3, 數3) => {
+					if (數1 == 數3) return false;
+					if (位3.length < 1) return false;
 					if (模式[色1][數1] != 模式[色1][數3]) return false;
-					if (位置相同(位3[0], m1.位)) return false;
 					位1 = 位3;
 					p1 = 0;
 					return true;
@@ -228,18 +228,15 @@ let 提示 = {
 			};
 			let m1 = 亂數.draw();
 			let [數, 色] = m1.id.split('');
+			let 位 = 位置[色][數];
 			if (模式[色][數] == 0) {
-				let 位 = 位置[色][數];
 				if (位掃描(位, (i, j) => 檢測確認(位[i], 位[j]))) break;
 			} else {
-				if (Object.some(位置[色], (位1, 數1) => {
-					if (位1.length < 1) return false;
-					return Object.some(位置[色], (位2, 數2) => {
-						if (數1 == 數2) return false;
-						if (位2.length < 1) return false;
-						if (模式[色][數1] != 模式[色][數2]) return false;
-						return 檢測確認(位1[0], 位2[0]);
-					});
+				if (Object.some(位置[色], (位2, 數2) => {
+					if (數 == 數2) return false;
+					if (位2.length < 1) return false;
+					if (模式[色][數] != 模式[色][數2]) return false;
+					return 檢測確認(位[0], 位2[0]);
 				})) break;
 			}
 		}
