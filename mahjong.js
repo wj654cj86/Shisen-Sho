@@ -141,6 +141,20 @@ function 檢查有解() {
 		}
 	});
 }
+function 找相同麻將(m, cb) {
+	let [數, 色] = m.id.split('');
+	let 位 = 位置[色][數];
+	if (模式[色][數] == 0) {
+		return 位.some((v, k) => !位置相同(v, m.位) && cb(位, k));
+	} else {
+		return Object.some(位置[色], (位2, 數2) => {
+			if (數 == 數2) return false;
+			if (位2.length < 1) return false;
+			if (模式[色][數] != 模式[色][數2]) return false;
+			return cb(位2, 0);
+		});
+	}
+}
 function 排除無解狀況() {
 	if (檢查有解()) return;
 	let 亂數 = [];
@@ -148,29 +162,16 @@ function 排除無解狀況() {
 	let m1 = 亂數.draw();
 	while (亂數.length > 0) {
 		let m2 = 亂數.draw();
-		if (能否連線(m1.位, m2.位).成功) {
-			let [數1, 色1] = m1.id.split('');
-			let 位1, p1;
-			if (模式[色1][數1] == 0) {
-				位1 = 位置[色1][數1];
-				p1 = 位1.findIndex(v => !位置相同(v, m1.位));
-			} else {
-				Object.some(位置[色1], (位3, 數3) => {
-					if (數1 == 數3) return false;
-					if (位3.length < 1) return false;
-					if (模式[色1][數1] != 模式[色1][數3]) return false;
-					位1 = 位3;
-					p1 = 0;
-					return true;
-				});
-			}
+		if (!能否連線(m1.位, m2.位).成功) continue;
+		找相同麻將(m1, (位1, p1) => {
 			let [數2, 色2] = m2.id.split('');
 			let 位2 = 位置[色2][數2];
 			let p2 = 位2.findIndex(v => 位置相同(v, m2.位));
 			let [a, b] = [位1[p1], 位2[p2]] = [位2[p2], 位1[p1]];
 			[座標(a).id, 座標(b).id] = [座標(b).id, 座標(a).id];
-			return;
-		}
+			return true;
+		});
+		break;
 	}
 }
 let 打亂 = {
@@ -206,6 +207,28 @@ let 打亂 = {
 			位置[色][數].push({ x: j, y: i });
 		});
 		排除無解狀況();
+	},
+	測試() {
+		if (張數 == 2) return;
+		張數 = 4;
+		let 亂數 = [];
+		模式掃描((色, 數, 模) => 位置[色][數] = []);
+		亂數.push(`春花`);
+		亂數.push(`夏花`);
+		亂數.push(`梅花`);
+		亂數.push(`蘭花`);
+		版面掃描((i, j) => 節點[i][j].id = '無');
+		節點[5][7].id = `春花`;
+		節點[5][8].id = `春花`;
+		節點[6][7].id = `春花`;
+		節點[6][8].id = `春花`;
+		版面掃描((i, j) => {
+			if (節點[i][j].id == '無') return;
+			節點[i][j].id = 亂數.draw();
+			let [數, 色] = 節點[i][j].id.split('');
+			位置[色][數].push({ x: j, y: i });
+		});
+		排除無解狀況();
 	}
 };
 let 提示 = {
@@ -219,26 +242,15 @@ let 提示 = {
 		let 亂數 = [];
 		位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
 		while (亂數.length > 0) {
-			let 檢測確認 = (a, b) => {
+			let m1 = 亂數.draw();
+			if (找相同麻將(m1, (位2, p2) => {
+				let a = m1.位, b = 位2[p2];
 				if (!能否連線(a, b).成功) return false;
 				提示.位置 = [a, b];
 				座標(a).see(true);
 				座標(b).see(true);
 				return true;
-			};
-			let m1 = 亂數.draw();
-			let [數, 色] = m1.id.split('');
-			let 位 = 位置[色][數];
-			if (模式[色][數] == 0) {
-				if (位掃描(位, (i, j) => 檢測確認(位[i], 位[j]))) break;
-			} else {
-				if (Object.some(位置[色], (位2, 數2) => {
-					if (數 == 數2) return false;
-					if (位2.length < 1) return false;
-					if (模式[色][數] != 模式[色][數2]) return false;
-					return 檢測確認(位[0], 位2[0]);
-				})) break;
-			}
+			})) break;
 		}
 	},
 	清理() {
@@ -265,7 +277,6 @@ function 節點轉位置() {
 		位置[色][數].push({ x: j, y: i });
 	});
 }
-
 function 位移x(y, 開始, 結束) {
 	range(開始, 結束).forEach(x => {
 		if (節點[y][x].id != '無') return;
@@ -309,6 +320,9 @@ function 移動(關卡) {
 
 function 測試() {
 	// 提示.顯示();
+	// 打亂.測試();
+	// 數據.關卡 = 1;
+	// 數據.全變 = 1000;
 }
 
 let 選擇 = {
