@@ -24,8 +24,7 @@ let 張數 = 0;
 
 let 模式掃描 = cb => Object.forEach(模式, (群, 色) => Object.forEach(群, (模, 數) => cb(色, 數, 模)));
 let 位置掃描 = cb => Object.forEach(位置, (群, 色) => Object.forEach(群, (位, 數) => cb(色, 數, 位)));
-let 版面掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
-let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, 位.length).some(j => cb(i, j)));
+let 節點掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
 
 function 建立節點(i, j) {
 	let id = '無';
@@ -123,24 +122,6 @@ async function 連線(...args) {
 	await sleep(100);
 	連線path.removeAttribute('d');
 }
-function 檢查有解() {
-	let 檢測確認 = (a, b) => 能否連線(a, b).成功;
-	return Object.some(位置, (群, 色) => {
-		if (模式[色][Object.entries(群)[0][0]] == 0) {
-			return Object.some(群, (位, 數) => 位掃描(位, (i, j) => 檢測確認(位[i], 位[j])));
-		} else {
-			return Object.some(群, (位1, 數1) => {
-				if (位1.length < 1) return false;
-				return Object.some(群, (位2, 數2) => {
-					if (數1 == 數2) return false;
-					if (位2.length < 1) return false;
-					if (模式[色][數1] != 模式[色][數2]) return false;
-					return 檢測確認(位1[0], 位2[0]);
-				});
-			});
-		}
-	});
-}
 function 找相同麻將(m, cb) {
 	let [數, 色] = m.id.split('');
 	let 位 = 位置[色][數];
@@ -154,6 +135,15 @@ function 找相同麻將(m, cb) {
 			return cb(位2, 0);
 		});
 	}
+}
+function 檢查有解() {
+	let 亂數 = [];
+	位置掃描((色, 數, 位) => 位.forEach(v => 亂數.push({ id: `${數}${色}`, 位: v })));
+	while (亂數.length > 0) {
+		let m1 = 亂數.shift();
+		if (找相同麻將(m1, (位2, p2) => 能否連線(m1.位, 位2[p2]).成功)) return true;
+	}
+	return false;
 }
 function 排除無解狀況() {
 	if (檢查有解()) return;
@@ -186,7 +176,7 @@ let 打亂 = {
 				亂數.push(`${數}${色}`);
 			}
 		});
-		版面掃描((i, j) => {
+		節點掃描((i, j) => {
 			節點[i][j].id = 亂數.draw();
 			let [數, 色] = 節點[i][j].id.split('');
 			位置[色][數].push({ x: j, y: i });
@@ -200,7 +190,7 @@ let 打亂 = {
 			位.forEach(v => 亂數.push(`${數}${色}`));
 			位置[色][數] = [];
 		});
-		版面掃描((i, j) => {
+		節點掃描((i, j) => {
 			if (節點[i][j].id == '無') return;
 			節點[i][j].id = 亂數.draw();
 			let [數, 色] = 節點[i][j].id.split('');
@@ -217,12 +207,12 @@ let 打亂 = {
 		亂數.push(`夏花`);
 		亂數.push(`梅花`);
 		亂數.push(`蘭花`);
-		版面掃描((i, j) => 節點[i][j].id = '無');
+		節點掃描((i, j) => 節點[i][j].id = '無');
 		節點[5][7].id = `春花`;
 		節點[5][8].id = `春花`;
 		節點[6][7].id = `春花`;
 		節點[6][8].id = `春花`;
-		版面掃描((i, j) => {
+		節點掃描((i, j) => {
 			if (節點[i][j].id == '無') return;
 			節點[i][j].id = 亂數.draw();
 			let [數, 色] = 節點[i][j].id.split('');
@@ -271,7 +261,7 @@ let 提示 = {
 };
 function 節點轉位置() {
 	位置掃描((色, 數, 位) => 位置[色][數] = []);
-	版面掃描((i, j) => {
+	節點掃描((i, j) => {
 		if (節點[i][j].id == '無') return;
 		let [數, 色] = 節點[i][j].id.split('');
 		位置[色][數].push({ x: j, y: i });
