@@ -261,7 +261,7 @@ function 節點轉位置() {
 function 位移x(y, 開始, 結束) {
 	range(開始, 結束).forEach(x => {
 		if (節點[y][x].id != '無') return;
-		range_nf(x, 結束).find(_x => {
+		range_nf(x, 結束).some(_x => {
 			if (節點[y][_x].id == '無') return false;
 			節點[y][x].id = 節點[y][_x].id;
 			節點[y][_x].id = '無';
@@ -272,7 +272,7 @@ function 位移x(y, 開始, 結束) {
 function 位移y(x, 開始, 結束) {
 	range(開始, 結束).forEach(y => {
 		if (節點[y][x].id != '無') return;
-		range_nf(y, 結束).find(_y => {
+		range_nf(y, 結束).some(_y => {
 			if (節點[_y][x].id == '無') return false;
 			節點[y][x].id = 節點[_y][x].id;
 			節點[_y][x].id = '無';

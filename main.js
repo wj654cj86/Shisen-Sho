@@ -75,27 +75,24 @@ async function 遊戲開始() {
 					break;
 				case '提示圖示':
 					if (麻將.提示.存在()) break;
-					if (數據.提示 > 0) {
-						數據.提示--;
-						時間.扣時();
-						麻將.提示.顯示();
-					}
+					if (數據.提示 <= 0) break;
+					數據.提示--;
+					時間.扣時();
+					麻將.提示.顯示();
 					break;
 				case '全變圖示':
-					if (數據.全變 > 0) {
-						麻將.選擇.取消();
-						麻將.提示.清理();
-						數據.全變--;
-						時間.扣時();
-						麻將.打亂.全變();
-					}
+					if (數據.全變 <= 0) break;
+					麻將.選擇.取消();
+					麻將.提示.清理();
+					數據.全變--;
+					時間.扣時();
+					麻將.打亂.全變();
 					break;
 				default:
-					if (物件.parentNode.id == '牌區') {
-						let { x, y } = 物件.dataset;
-						let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
-						if (回傳值) 中斷訊息 = 回傳值;
-					}
+					if (物件.parentNode.id != '牌區') break;
+					let { x, y } = 物件.dataset;
+					let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
+					if (回傳值) 中斷訊息 = 回傳值;
 					break;
 			}
 		}
