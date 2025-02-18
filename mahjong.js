@@ -61,25 +61,22 @@ let 位置相同 = (a, b) => a.x == b.x && a.y == b.y;
 let 一樣 = (a, b) => 座標(a).mod == 0 ? 座標(a).id == 座標(b).id : 座標(a).mod == 座標(b).mod;
 
 function 能否連線(a, b) {
-	let 有麻將 = ({ x, y }) => { if (節點[y][x].id != '無') throw 'no'; };
+	let 有麻將 = ({ x, y }) => 節點[y][x].id != '無';
 	let 結果 = { 成功: false };
 
 	for (let i = 0; i < 2; i++) {
 		let p = ['x', 'y'][i];
 		let q = ['y', 'x'][i];
 		range(a[p], b[p]).forEach(_p => {
-			try {
-				range_nfl(a[p], _p).forEach(M_p => 有麻將({ [p]: M_p, [q]: a[q] }));
-				if (_p != a[p]) 有麻將({ [p]: _p, [q]: a[q] });
-				range_nfl(a[q], b[q]).forEach(M_q => 有麻將({ [p]: _p, [q]: M_q }));
-				if (_p != b[p]) 有麻將({ [p]: _p, [q]: b[q] });
-				range_nfl(_p, b[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: b[q] }));
-
-				if (_p == a[p] && _p == b[p]) { 結果 = { 成功: true, 轉角: [] }; }
-				else if (_p == a[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: b[q] }] }; }
-				else if (_p == b[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }] }; }
-				else if (!結果.成功) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }, { [p]: _p, [q]: b[q] }] }; }
-			} catch (e) { }
+			if (range_nfl(a[p], _p).some(M_p => 有麻將({ [p]: M_p, [q]: a[q] }))) return;
+			if (_p != a[p] && 有麻將({ [p]: _p, [q]: a[q] })) return;
+			if (range_nfl(a[q], b[q]).some(M_q => 有麻將({ [p]: _p, [q]: M_q }))) return;
+			if (_p != b[p] && 有麻將({ [p]: _p, [q]: b[q] })) return;
+			if (range_nfl(_p, b[p]).some(M_p => 有麻將({ [p]: M_p, [q]: b[q] }))) return;
+			if (_p == a[p] && _p == b[p]) { 結果 = { 成功: true, 轉角: [] }; }
+			else if (_p == a[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: b[q] }] }; }
+			else if (_p == b[p]) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }] }; }
+			else if (!結果.成功) { 結果 = { 成功: true, 轉角: [{ [p]: _p, [q]: a[q] }, { [p]: _p, [q]: b[q] }] }; }
 		});
 		if (結果.成功 && 結果.轉角.length <= 1) return 結果;
 	}
@@ -93,26 +90,20 @@ function 能否連線(a, b) {
 		for (let j = 0; j < 2; j++) {
 			let _p = R_p[j];
 			let L_p = [-1, S_p][j];
-			try {
-				range_nl(_p, a[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: a[q] }));
-				range_nl(_p, b[p]).forEach(M_p => 有麻將({ [p]: M_p, [q]: b[q] }));
-				range_nfl(_p, L_p).forEach(M_p => {
-					有麻將({ [p]: M_p, [q]: a[q] });
-					有麻將({ [p]: M_p, [q]: b[q] });
-					try {
-						range_nfl(a[q], b[q]).forEach(M_q => 有麻將({ [p]: M_p, [q]: M_q }));
-						throw M_p;
-					} catch (e) { if (e != 'no') throw e; }
-				});
-				throw L_p;
-			} catch (e) {
-				if (e != 'no') {
-					let M_p = e;
-					let 步數 = Math.abs(M_p - a[p]) + Math.abs(M_p - b[p]) + Math.abs(a[q] - b[q]);
-					if (!結果.成功 || 步數 < 結果.步數)
-						結果 = { 成功: true, 轉角: [{ [p]: M_p, [q]: a[q] }, { [p]: M_p, [q]: b[q] }], 步數 };
-				}
-			}
+			let N_p = -2;
+			if (range_nl(_p, a[p]).some(M_p => 有麻將({ [p]: M_p, [q]: a[q] }))) continue;
+			if (range_nl(_p, b[p]).some(M_p => 有麻將({ [p]: M_p, [q]: b[q] }))) continue;
+			if (!range_nfl(_p, L_p).some(M_p => {
+				if (有麻將({ [p]: M_p, [q]: a[q] })) return true;
+				if (有麻將({ [p]: M_p, [q]: b[q] })) return true;
+				if (range_nfl(a[q], b[q]).some(M_q => 有麻將({ [p]: M_p, [q]: M_q }))) return false;
+				N_p = M_p;
+				return true;
+			})) N_p = L_p;
+			if (N_p == -2) continue;
+			let 步數 = Math.abs(N_p - a[p]) + Math.abs(N_p - b[p]) + Math.abs(a[q] - b[q]);
+			if (!結果.成功 || 步數 < 結果.步數)
+				結果 = { 成功: true, 轉角: [{ [p]: N_p, [q]: a[q] }, { [p]: N_p, [q]: b[q] }], 步數 };
 		}
 	}
 	return 結果;
