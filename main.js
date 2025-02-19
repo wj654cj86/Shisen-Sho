@@ -1,4 +1,4 @@
-import cc from "./colorconvert.js";
+import hueRotateFilter from "./hueRotateFilter.js";
 import 數據 from "./data.js";
 import 時間 from "./timer.js";
 import 音效 from "./soundeffect.js";
@@ -13,25 +13,6 @@ async function 載入圖示() {
 		${xml2text(document.querySelector('#中元'))}
 		</svg>`
 	);
-}
-
-async function 載入封面() {
-	let img = await loadimg('封面.jpg');
-	let canvas = text2html(`<canvas width="${img.naturalWidth}" height="${img.naturalHeight}"/>`);
-	let ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0, 0);
-	let imgdt = ctx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
-	let a = imgdt.data;
-	for (let i = 0; i < a.length; i += 4) {
-		let [h, s, v] = cc.rgb.hsv(a[i], a[i + 1], a[i + 2]);
-		h = (h + 180) % 360;
-		let [r, g, b] = cc.hsv.rgb(h, s, v);
-		a[i] = r;
-		a[i + 1] = g;
-		a[i + 2] = b;
-	}
-	ctx.putImageData(imgdt, 0, 0);
-	封面反向.setAttribute('href', await canvas2url(canvas));
 }
 
 async function 顯示信息(str) {
@@ -138,7 +119,7 @@ document.body.oncontextmenu = () => false;
 主頁.show = 1;
 遊戲.show = 0;
 載入圖示();
-載入封面();
+封面反向.setAttribute('href', await hueRotateFilter('封面.jpg', 180));
 玩.onmousedown = 遊戲開始;
 parent.document.body.style.opacity = 1;
 document.body.style.opacity = 1;
