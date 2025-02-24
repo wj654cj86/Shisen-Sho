@@ -3,32 +3,26 @@ import 音效 from "./soundeffect.js";
 
 let 寬度 = 16, 高度 = 9;
 let 模式 = {
-	筒: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
-	條: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
-	萬: { 一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0 },
-	風: { 東: 0, 南: 0, 西: 0, 北: 0 },
-	元: { 中: 0, 發: 0, 白: 0 },
-	花: { 春: 1, 夏: 1, 秋: 1, 冬: 1, 梅: 2, 蘭: 2, 菊: 2, 竹: 2 }
+	一: 0, 二: 0, 三: 0, 四: 0, 五: 0, 六: 0, 七: 0, 八: 0, 九: 0,
+	甲: 0, 乙: 0, 丙: 0, 丁: 0, 戊: 0, 己: 0, 庚: 0, 辛: 0, 壬: 0,
+	壹: 0, 貳: 0, 參: 0, 肆: 0, 伍: 0, 陸: 0, 柒: 0, 捌: 0, 玖: 0,
+	東: 0, 南: 0, 西: 0, 北: 0, 中: 0, 發: 0, 白: 0, 紅: 1, 黑: 1
 };
 let 位置 = {
-	筒: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
-	條: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
-	萬: { 一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [] },
-	風: { 東: [], 南: [], 西: [], 北: [] },
-	元: { 中: [], 發: [], 白: [] },
-	花: { 春: [], 夏: [], 秋: [], 冬: [], 梅: [], 蘭: [], 菊: [], 竹: [] }
+	一: [], 二: [], 三: [], 四: [], 五: [], 六: [], 七: [], 八: [], 九: [],
+	甲: [], 乙: [], 丙: [], 丁: [], 戊: [], 己: [], 庚: [], 辛: [], 壬: [],
+	壹: [], 貳: [], 參: [], 肆: [], 伍: [], 陸: [], 柒: [], 捌: [], 玖: [],
+	東: [], 南: [], 西: [], 北: [], 中: [], 發: [], 白: [], 紅: [], 黑: []
 };
 let 節點 = [];
 let 座標 = ({ x, y }) => 節點[y][x];
 let 張數 = 0;
 
-let 模式掃描 = cb => Object.forEach(模式, (群, 色) => Object.forEach(群, (模, 數) => cb(色, 數, 模)));
-let 位置掃描 = cb => Object.forEach(位置, (群, 色) => Object.forEach(群, (位, 數) => cb(色, 數, 位)));
 let 節點掃描 = cb => range_nl(0, 高度).forEach(i => range_nl(0, 寬度).forEach(j => cb(i, j)));
+let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, 位.length).some(j => cb(i, j)));
 
 function 建立節點(i, j) {
 	let id = '無';
-	let mod = -1;
 	let img = text2svg(`<use transform="scale(0.2)"/>`);
 	let rect = text2svg(`<use href="#框線" class="rect"/>`);
 	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`);
@@ -38,27 +32,20 @@ function 建立節點(i, j) {
 	牌區.append(svg);
 	return {
 		svg, lock, see,
-		get mod() { return mod; },
 		set id(_id) {
 			id = _id;
 			see(false);
 			lock(false);
 			img.setAttribute('href', `#${id}`);
 			if (id == '無') {
-				mod = -1;
 				svg.setAttribute('opacity', 0);
 			} else {
-				let [數, 色] = id.split('');
-				mod = 模式[色][數];
 				svg.removeAttribute('opacity');
 			}
 		},
 		get id() { return id; }
 	};
 }
-
-let 位置相同 = (a, b) => a.x == b.x && a.y == b.y;
-let 一樣 = (a, b) => 座標(a).mod == 0 ? 座標(a).id == 座標(b).id : 座標(a).mod == 座標(b).mod;
 
 function 能否連線(a, b) {
 	let 有麻將 = ({ x, y }) => 節點[y][x].id != '無';
@@ -113,103 +100,63 @@ async function 連線(...args) {
 	await sleep(100);
 	連線path.removeAttribute('d');
 }
-function 位置轉陣列() {
-	let 陣列 = [];
-	位置掃描((色, 數, 位) => 位.forEach(v => 陣列.push({ id: `${數}${色}`, 位: v })));
-	return 陣列;
-}
-let 位置清空 = () => 位置掃描((色, 數, 位) => 位置[色][數] = []);
-function 找相同麻將(m, cb) {
-	let [數, 色] = m.id.split('');
-	let 位 = 位置[色][數];
-	if (模式[色][數] == 0) {
-		return 位.some((v, k) => !位置相同(v, m.位) && cb(位, k));
-	} else {
-		return Object.some(位置[色], (位2, 數2) => {
-			if (數 == 數2) return false;
-			if (位2.length < 1) return false;
-			if (模式[色][數] != 模式[色][數2]) return false;
-			return cb(位2, 0);
-		});
-	}
-}
-function 檢查有解() {
-	let 陣列 = 位置轉陣列();
-	while (陣列.length > 0) {
-		let m1 = 陣列.shift();
-		if (找相同麻將(m1, (位2, p2) => 能否連線(m1.位, 位2[p2]).成功)) return true;
-	}
-	return false;
+
+let 位置轉陣列 = () => Object.entries(位置).filter(([, 位]) => 位.length > 0);
+let 檢查有解 = () => Object.some(位置, 位 => 位掃描(位, (i, j) => 能否連線(位[i], 位[j]).成功));
+
+function 節點轉位置() {
+	Object.forEach(位置, (位, 牌) => 位置[牌] = []);
+	節點掃描((i, j) => {
+		if (節點[i][j].id == '無') return;
+		let [牌, n] = 節點[i][j].id.split('');
+		位置[牌].push({ x: j, y: i, n });
+	});
 }
 function 排除無解狀況() {
+	節點轉位置();
 	if (檢查有解()) return;
 	let 陣列 = 位置轉陣列();
-	let m1 = 陣列.draw();
+	let [, 位1] = 陣列.draw();
+	let a = 位1.random();
 	while (陣列.length > 0) {
-		let m2 = 陣列.draw();
-		if (!能否連線(m1.位, m2.位).成功) continue;
-		找相同麻將(m1, (位1, p1) => {
-			let [數2, 色2] = m2.id.split('');
-			let 位2 = 位置[色2][數2];
-			let p2 = 位2.findIndex(v => 位置相同(v, m2.位));
-			let [a, b] = [位1[p1], 位2[p2]] = [位2[p2], 位1[p1]];
+		let [, 位2] = 陣列.draw();
+		if (位2.some(b => {
+			if (!能否連線(a, b).成功) return false;
+			[a.x, b.x] = [b.x, a.x];
+			[a.y, b.y] = [b.y, a.y];
 			[座標(a).id, 座標(b).id] = [座標(b).id, 座標(a).id];
 			return true;
-		});
-		break;
+		})) break;
 	}
 }
+
 let 打亂 = {
 	開始() {
 		張數 = 144;
-		let 陣列 = [];
-		模式掃描((色, 數, 模) => {
-			if (模 == 0) {
-				range_nl(0, 4).forEach(i => 陣列.push(`${數}${色}`));
-			} else {
-				陣列.push(`${數}${色}`);
-			}
-		});
-		位置清空();
-		節點掃描((i, j) => {
-			節點[i][j].id = 陣列.draw();
-			let [數, 色] = 節點[i][j].id.split('');
-			位置[色][數].push({ x: j, y: i });
-		});
+		let 陣列 = Object.entries(模式).flatMap(([牌, 模]) => range_nl(0, 4).map(i => `${牌}${模 == 0 ? '' : (i + 1)}`));
+		節點掃描((i, j) => 節點[i][j].id = 陣列.draw());
 		排除無解狀況();
 	},
 	全變() {
 		音效.change.replay();
-		let 陣列 = 位置轉陣列();
-		位置清空();
-		節點掃描((i, j) => {
-			if (節點[i][j].id == '無') return;
-			節點[i][j].id = 陣列.draw().id;
-			let [數, 色] = 節點[i][j].id.split('');
-			位置[色][數].push({ x: j, y: i });
-		});
+		let 陣列 = Object.entries(位置).flatMap(([牌, 位]) => 位.map(v => `${牌}${v.n ?? ''}`));
+		節點掃描((i, j) => { if (節點[i][j].id != '無') 節點[i][j].id = 陣列.draw(); });
 		排除無解狀況();
 	},
 	測試() {
 		if (張數 == 2) return;
 		張數 = 4;
 		let 陣列 = [];
-		陣列.push(`春花`);
-		陣列.push(`夏花`);
-		陣列.push(`梅花`);
-		陣列.push(`蘭花`);
+		陣列.push(`紅1`);
+		陣列.push(`紅2`);
+		陣列.push(`黑1`);
+		陣列.push(`黑2`);
 		節點掃描((i, j) => 節點[i][j].id = '無');
-		節點[5][7].id = `春花`;
-		節點[5][8].id = `春花`;
-		節點[6][7].id = `春花`;
-		節點[6][8].id = `春花`;
-		位置清空();
-		節點掃描((i, j) => {
-			if (節點[i][j].id == '無') return;
-			節點[i][j].id = 陣列.draw();
-			let [數, 色] = 節點[i][j].id.split('');
-			位置[色][數].push({ x: j, y: i });
-		});
+		節點[5][7].id = `紅`;
+		節點[5][8].id = `紅`;
+		節點[6][7].id = `紅`;
+		節點[6][8].id = `紅`;
+		節點掃描((i, j) => { if (節點[i][j].id != '無') 節點[i][j].id = 陣列.draw(); });
 		排除無解狀況();
 	}
 };
@@ -223,9 +170,10 @@ let 提示 = {
 		音效.select.replay();
 		let 陣列 = 位置轉陣列();
 		while (陣列.length > 0) {
-			let m1 = 陣列.draw();
-			if (找相同麻將(m1, (位2, p2) => {
-				let a = m1.位, b = 位2[p2];
+			let [, 位] = 陣列.draw();
+			if (位.length == 4) range_nl(0, 4).forEach(i => 位.push(位.draw()));
+			if (位掃描(位, (i, j) => {
+				let a = 位[i], b = 位[j];
 				if (!能否連線(a, b).成功) return false;
 				提示.位置 = [a, b];
 				座標(a).see(true);
@@ -250,14 +198,6 @@ let 提示 = {
 		return false;
 	}
 };
-function 節點轉位置() {
-	位置清空();
-	節點掃描((i, j) => {
-		if (節點[i][j].id == '無') return;
-		let [數, 色] = 節點[i][j].id.split('');
-		位置[色][數].push({ x: j, y: i });
-	});
-}
 function 位移x(y, 開始, 結束) {
 	range(開始, 結束).forEach(x => {
 		if (節點[y][x].id != '無') return;
@@ -317,10 +257,10 @@ let 選擇 = {
 		} else {
 			let a = 選擇.位置;
 			let b = { x, y };
-			if (位置相同(a, b)) return;
+			if (a.x == b.x && a.y == b.y) return;
 			選擇.位置 = null;
 			try {
-				if (!一樣(a, b)) throw 'no';
+				if (座標(a).id[0] != 座標(b).id[0]) throw 'no';
 				let 結果 = 能否連線(a, b);
 				if (!結果.成功) throw 'no';
 				音效.connect.replay();
