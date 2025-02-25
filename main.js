@@ -72,8 +72,7 @@ async function 遊戲開始() {
 				default:
 					if (物件.parentNode.id != '牌區') break;
 					let { x, y } = 物件.dataset;
-					let 回傳值 = await 麻將.選擇.記錄(Number(x), Number(y));
-					if (回傳值) 中斷訊息 = 回傳值;
+					中斷訊息 = await 麻將.選擇.記錄(Number(x), Number(y)) ?? '';
 					break;
 			}
 		}

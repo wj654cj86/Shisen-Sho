@@ -263,35 +263,38 @@ let 選擇 = {
 			let b = { x, y };
 			if (位置一樣(a, b)) return;
 			選擇.位置 = null;
-			try {
-				if (!麻將一樣(a, b)) throw 'no';
-				let 結果 = 能否連線(a, b);
-				if (!結果.成功) throw 'no';
-				音效.connect.replay();
-				提示.清理();
-				座標(b).lock(true);
-				張數 -= 2;
-				數據.分數 += 20;
-				await 連線(a, ...結果.轉角, b);
-				座標(a).id = '無';
-				座標(b).id = '無';
-				if (張數) {
-					移動(數據.關卡);
-					if (!檢查有解()) {
-						if (數據.全變 > 0) {
-							數據.全變--;
-							打亂.全變();
-						} else {
-							return '沒有全變';
-						}
-					}
-					測試();
-				} else {
-					return '沒有麻將';
-				}
-			} catch (e) {
+			if (!麻將一樣(a, b)) {
 				音效.error.replay();
 				座標(a).lock(false);
+				return;
+			}
+			let 結果 = 能否連線(a, b);
+			if (!結果.成功) {
+				音效.error.replay();
+				座標(a).lock(false);
+				return;
+			}
+			音效.connect.replay();
+			提示.清理();
+			座標(b).lock(true);
+			張數 -= 2;
+			數據.分數 += 20;
+			await 連線(a, ...結果.轉角, b);
+			座標(a).id = '無';
+			座標(b).id = '無';
+			if (張數) {
+				移動(數據.關卡);
+				if (!檢查有解()) {
+					if (數據.全變 > 0) {
+						數據.全變--;
+						打亂.全變();
+					} else {
+						return '沒有全變';
+					}
+				}
+				測試();
+			} else {
+				return '沒有麻將';
 			}
 			選擇.位置 = null;
 		}
