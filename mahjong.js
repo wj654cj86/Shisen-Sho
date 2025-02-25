@@ -95,17 +95,13 @@ function 能否連線(a, b) {
 	}
 	return 結果;
 }
-async function 連線(...args) {
-	連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
-	await sleep(100);
-	連線path.removeAttribute('d');
-}
 
 let 位置轉陣列 = () => Object.entries(位置).filter(([, 位]) => 位.length > 0);
+let 位置清空 = () => Object.forEach(位置, (位, 牌) => 位置[牌] = []);
 let 檢查有解 = () => Object.some(位置, 位 => 位掃描(位, (i, j) => 能否連線(位[i], 位[j]).成功));
 
 function 節點轉位置() {
-	Object.forEach(位置, (位, 牌) => 位置[牌] = []);
+	位置清空();
 	節點掃描((i, j) => {
 		if (節點[i][j].id == '無') return;
 		let [牌, n] = 節點[i][j].id.split('');
@@ -117,17 +113,17 @@ function 排除無解狀況() {
 	if (檢查有解()) return;
 	let 陣列 = 位置轉陣列();
 	let [, 位1] = 陣列.draw();
-	let a = 位1.random();
+	range_nl(0, 位1.length).forEach(i => 位1.push(位1.draw()));
+	let a = 位1[0], c = 位1[1];
 	while (陣列.length > 0) {
 		let [, 位2] = 陣列.draw();
 		if (位2.some(b => {
 			if (!能否連線(a, b).成功) return false;
-			[a.x, b.x] = [b.x, a.x];
-			[a.y, b.y] = [b.y, a.y];
-			[座標(a).id, 座標(b).id] = [座標(b).id, 座標(a).id];
+			[座標(c).id, 座標(b).id] = [座標(b).id, 座標(c).id];
 			return true;
 		})) break;
 	}
+	節點轉位置();
 }
 
 let 打亂 = {
@@ -246,6 +242,14 @@ function 測試() {
 	// 數據.全變 = 1000;
 }
 
+let 位置一樣 = (a, b) => a.x == b.x && a.y == b.y;
+let 麻將一樣 = (a, b) => 座標(a).id[0] == 座標(b).id[0];
+async function 連線(...args) {
+	連線path.setAttribute('d', 'M' + args.map(({ x, y }) => (x * 60 + 30) + ',' + (y * 80 + 40)).join('L'));
+	await sleep(100);
+	連線path.removeAttribute('d');
+}
+
 let 選擇 = {
 	位置: null,
 	async 記錄(x, y) {
@@ -257,10 +261,10 @@ let 選擇 = {
 		} else {
 			let a = 選擇.位置;
 			let b = { x, y };
-			if (a.x == b.x && a.y == b.y) return;
+			if (位置一樣(a, b)) return;
 			選擇.位置 = null;
 			try {
-				if (座標(a).id[0] != 座標(b).id[0]) throw 'no';
+				if (!麻將一樣(a, b)) throw 'no';
 				let 結果 = 能否連線(a, b);
 				if (!結果.成功) throw 'no';
 				音效.connect.replay();
