@@ -25,7 +25,7 @@ function 建立節點(i, j) {
 	let id = '無';
 	let img = text2svg(`<use transform="scale(0.2)"/>`);
 	let rect = text2svg(`<use href="#框線" class="rect"/>`);
-	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}" opacity="0"></g>`);
+	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}"></g>`);
 	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
 	let see = b => rect.classList[b ? 'add' : 'remove']('see');
 	svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), img, rect, text2svg(`<use href="#框線" class="move"/>`));
@@ -37,11 +37,7 @@ function 建立節點(i, j) {
 			see(false);
 			lock(false);
 			img.setAttribute('href', `#${id}`);
-			if (id == '無') {
-				svg.setAttribute('opacity', 0);
-			} else {
-				svg.removeAttribute('opacity');
-			}
+			svg.classList[id == '無' ? 'add' : 'remove']('hide');
 		},
 		get id() { return id; }
 	};
@@ -112,12 +108,9 @@ function 排除無解狀況() {
 	節點轉位置();
 	if (檢查有解()) return;
 	let 陣列 = 位置轉陣列();
-	let [, 位1] = 陣列.draw();
-	range_nl(0, 位1.length).forEach(i => 位1.push(位1.draw()));
-	let a = 位1[0], c = 位1[1];
+	let [a, c] = 陣列.draw()[1].shuffle();
 	while (陣列.length > 0) {
-		let [, 位2] = 陣列.draw();
-		if (位2.some(b => {
+		if (陣列.draw()[1].shuffle().some(b => {
 			if (!能否連線(a, b).成功) return false;
 			[座標(c).id, 座標(b).id] = [座標(b).id, 座標(c).id];
 			return true;
@@ -166,8 +159,7 @@ let 提示 = {
 		音效.select.replay();
 		let 陣列 = 位置轉陣列();
 		while (陣列.length > 0) {
-			let [, 位] = 陣列.draw();
-			if (位.length == 4) range_nl(0, 4).forEach(i => 位.push(位.draw()));
+			let 位 = 陣列.draw()[1].shuffle();
 			if (位掃描(位, (i, j) => {
 				let a = 位[i], b = 位[j];
 				if (!能否連線(a, b).成功) return false;

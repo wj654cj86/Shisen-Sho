@@ -15,6 +15,8 @@ async function 載入圖示() {
 	);
 }
 
+let 載入封面 = async () => 封面反向.setAttribute('href', await hueRotateFilter('封面.jpg', 180));
+
 async function 顯示信息(str) {
 	let arr = str.split('\n');
 	信息.querySelectorAll('tspan').forEach((tspan, key) => tspan.innerHTML = arr[key] ?? '');
@@ -28,6 +30,7 @@ async function 遊戲開始() {
 	數據.分數 = 0;
 	主頁.show = 0;
 	遊戲.show = 1;
+	設定.show = 0;
 	數據.關卡 = 0;
 	數據.全變 = 19;
 	let 遊戲進行 = true;
@@ -112,13 +115,25 @@ async function 遊戲開始() {
 	}
 	遊戲.show = 0;
 	主頁.show = 1;
+	設定.show = 0;
 }
 
 document.body.oncontextmenu = () => false;
 主頁.show = 1;
 遊戲.show = 0;
+設定.show = 0;
 載入圖示();
-封面反向.setAttribute('href', await hueRotateFilter('封面.jpg', 180));
+載入封面();
 玩.onmousedown = 遊戲開始;
+改.onmousedown = function () {
+	主頁.show = 0;
+	遊戲.show = 0;
+	設定.show = 1;
+};
+設定確定.onmousedown = function () {
+	主頁.show = 1;
+	遊戲.show = 0;
+	設定.show = 0;
+};
 parent.document.body.style.opacity = 1;
 document.body.style.opacity = 1;

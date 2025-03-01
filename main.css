@@ -1,31 +1,35 @@
 body {
-	opacity            : 0;
-	user-select        : none;
-	-moz-user-select   : none;
+	opacity: 0;
+	user-select: none;
+	-moz-user-select: none;
 	-webkit-user-select: none;
-	-ms-user-select    : none;
-	background-color   : #000;
-	position           : absolute;
-	left               : 0;
-	top                : 0;
+	-ms-user-select: none;
+	background-color: #000;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
 
 body>svg {
 	position: absolute;
-	left    : 0;
-	top     : 0;
+	left: 0;
+	top: 0;
 }
 
 text {
-	stroke-linejoin  : round;
-	font-size        : 20px;
-	font-family      : Microsoft JhengHei;
-	text-anchor      : middle;
+	stroke-linejoin: round;
+	font-size: 20px;
+	font-family: Microsoft JhengHei;
+	text-anchor: middle;
 	dominant-baseline: middle;
 }
 
 #牌區>g {
 	transform: translate(calc(var(--x) * 60px), calc(var(--y) * 80px));
+}
+
+#牌區>g.hide {
+	opacity: 0;
 }
 
 #牌區>g>.move,
