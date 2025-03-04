@@ -24,11 +24,11 @@ let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, �
 function 建立節點(i, j) {
 	let id = '無';
 	let img = text2svg(`<use transform="scale(0.2)"/>`);
-	let rect = text2svg(`<use href="#框線" class="rect"/>`);
+	let rect = text2svg(`<rect class="rect"/>`);
 	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}"></g>`);
 	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
 	let see = b => rect.classList[b ? 'add' : 'remove']('see');
-	svg.append(text2svg(`<use href="#框線" fill="#f5f5f5"/>`), img, rect, text2svg(`<use href="#框線" class="move"/>`));
+	svg.append(text2svg(`<rect/>`), img, rect, text2svg(`<rect class="move"/>`), text2svg(`<rect class="move2"/>`));
 	牌區.append(svg);
 	return {
 		svg, lock, see,
@@ -92,7 +92,7 @@ function 能否連線(a, b) {
 	return 結果;
 }
 
-let 位置轉陣列 = () => Object.entries(位置).filter(([, 位]) => 位.length > 0);
+let 位置轉陣列 = () => Object.filter(位置, 位 => 位.length > 0);
 let 位置清空 = () => Object.forEach(位置, (位, 牌) => 位置[牌] = []);
 let 檢查有解 = () => Object.some(位置, 位 => 位掃描(位, (i, j) => 能否連線(位[i], 位[j]).成功));
 
@@ -100,7 +100,7 @@ function 節點轉位置() {
 	位置清空();
 	節點掃描((i, j) => {
 		if (節點[i][j].id == '無') return;
-		let [牌, n] = 節點[i][j].id.split('');
+		let [牌, n] = 節點[i][j].id;
 		位置[牌].push({ x: j, y: i, n });
 	});
 }
@@ -122,13 +122,13 @@ function 排除無解狀況() {
 let 打亂 = {
 	開始() {
 		張數 = 144;
-		let 陣列 = Object.entries(模式).flatMap(([牌, 模]) => range_nl(0, 4).map(i => `${牌}${模 == 0 ? '' : (i + 1)}`));
+		let 陣列 = Object.flatMap(模式, (模, 牌) => range_nl(0, 4).map(i => `${牌}${模 == 0 ? '' : (i + 1)}`));
 		節點掃描((i, j) => 節點[i][j].id = 陣列.draw());
 		排除無解狀況();
 	},
 	全變() {
 		音效.change.replay();
-		let 陣列 = Object.entries(位置).flatMap(([牌, 位]) => 位.map(v => `${牌}${v.n ?? ''}`));
+		let 陣列 = Object.flatMap(位置, (位, 牌) => 位.map(v => `${牌}${v.n ?? ''}`));
 		節點掃描((i, j) => { if (節點[i][j].id != '無') 節點[i][j].id = 陣列.draw(); });
 		排除無解狀況();
 	},

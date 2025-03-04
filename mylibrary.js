@@ -19,6 +19,8 @@ Array.prototype.shuffle = function () {
 
 Object.forEach = (b, cb) => Object.entries(b).forEach(([k, v]) => cb(v, k));
 Object.some = (b, cb) => Object.entries(b).some(([k, v]) => cb(v, k));
+Object.filter = (b, cb) => Object.entries(b).filter(([k, v]) => cb(v, k));
+Object.flatMap = (b, cb) => Object.entries(b).flatMap(([k, v]) => cb(v, k));
 
 Audio.prototype.replay = function () {
 	this.currentTime = 0;

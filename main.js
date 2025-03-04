@@ -4,7 +4,7 @@ import 時間 from "./timer.js";
 import 音效 from "./soundeffect.js";
 import 麻將 from "./mahjong.js";
 
-Object.defineProperty(Node.prototype, 'show', { set: function (s) { this.style.display = s == 1 ? 'inline' : 'none'; } });
+let 切換頁面 = 頁面 => document.querySelectorAll('.頁面').forEach(v => v.classList[v === 頁面 ? 'add' : 'remove']('顯示'));
 
 async function 載入圖示() {
 	parent.document.querySelector('[rel="icon"]').href = svgtext2url(
@@ -21,23 +21,22 @@ async function 顯示信息(str) {
 	let arr = str.split('\n');
 	信息.querySelectorAll('tspan').forEach((tspan, key) => tspan.innerHTML = arr[key] ?? '');
 	遊戲.append(小窗);
-	await new Promise(r => 確定.onmousedown = r);
+	await new Promise(r => 小窗確定.onmousedown = r);
 	預設.append(小窗);
 }
 
 async function 遊戲開始() {
-	麻將.選擇.取消();
 	數據.分數 = 0;
-	主頁.show = 0;
-	遊戲.show = 1;
-	設定.show = 0;
 	數據.關卡 = 0;
 	數據.全變 = 19;
+	切換頁面(遊戲);
 	let 遊戲進行 = true;
 	while (遊戲進行) {
 		數據.關卡++;
 		數據.全變++;
 		數據.提示 = 5;
+		麻將.選擇.取消();
+		麻將.提示.清理();
 		麻將.打亂.開始();
 		時間.開始();
 		麻將.測試();
@@ -113,27 +112,15 @@ async function 遊戲開始() {
 				break;
 		}
 	}
-	遊戲.show = 0;
-	主頁.show = 1;
-	設定.show = 0;
+	切換頁面(主頁);
 }
 
 document.body.oncontextmenu = () => false;
-主頁.show = 1;
-遊戲.show = 0;
-設定.show = 0;
+切換頁面(主頁);
 載入圖示();
 載入封面();
 玩.onmousedown = 遊戲開始;
-改.onmousedown = function () {
-	主頁.show = 0;
-	遊戲.show = 0;
-	設定.show = 1;
-};
-設定確定.onmousedown = function () {
-	主頁.show = 1;
-	遊戲.show = 0;
-	設定.show = 0;
-};
+改.onmousedown = () => 切換頁面(設定);
+設定確定.onmousedown = () => 切換頁面(主頁);
 parent.document.body.style.opacity = 1;
 document.body.style.opacity = 1;

@@ -1,7 +1,7 @@
 let 數據 = {};
 function 道具(名稱, 格式 = n => n) {
 	let 數量 = 0;
-	let 數量text = document.querySelector(`#${名稱}svg>text`);
+	let 數量text = document.querySelector(`#${名稱}數值`);
 	let 圖示 = document.querySelector(`#${名稱}圖示`);
 	Object.defineProperty(數據, 名稱, {
 		get: () => 數量,
@@ -20,7 +20,7 @@ function 道具(名稱, 格式 = n => n) {
 }
 function 數值(名稱, 格式 = n => n) {
 	let 數量 = 0;
-	let 數量text = document.querySelector(`#${名稱}svg>text`);
+	let 數量text = document.querySelector(`#${名稱}數值`);
 	Object.defineProperty(數據, 名稱, {
 		get: () => 數量,
 		set: _數量 => {

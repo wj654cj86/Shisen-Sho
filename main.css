@@ -18,10 +18,38 @@ body>svg {
 
 text {
 	stroke-linejoin: round;
-	font-size: 20px;
+	font-size: 40px;
 	font-family: Microsoft JhengHei;
 	text-anchor: middle;
 	dominant-baseline: middle;
+	fill: #fff;
+	stroke: #fff;
+	stroke-width: 0.025em;
+	transform: translate(0, 0.1em);
+}
+
+.頁面 {
+	display: none;
+}
+
+.頁面.顯示 {
+	display: inline;
+}
+
+.按鈕>rect {
+	rx: 30px;
+	ry: 30px;
+	width: 240px;
+	height: 90px;
+	fill: #555;
+}
+
+.按鈕>g {
+	transform: translate(120px, 45px);
+}
+
+.按鈕>g>text {
+	font-size: 60px;
 }
 
 #牌區>g {
@@ -32,13 +60,39 @@ text {
 	opacity: 0;
 }
 
-#牌區>g>.move,
+#牌區>g>rect {
+	x: 1px;
+	y: 1px;
+	rx: 3px;
+	ry: 3px;
+	width: 58px;
+	height: 78px;
+	fill: #f0f0e5;
+}
+
 #牌區>g>.rect {
 	fill: none;
 }
 
+#牌區>g>.move,
+#牌區>g>.move2 {
+	x: 2px;
+	y: 2px;
+	rx: 3px;
+	ry: 3px;
+	width: 56px;
+	height: 76px;
+	fill: none;
+}
+
 #牌區>g:hover>.move {
-	fill: #00bf0055;
+	stroke: #e22;
+	stroke-width: 6px;
+}
+
+#牌區>g:hover>.move2 {
+	stroke: #ed2;
+	stroke-width: 3px;
 }
 
 #牌區>g>.rect.see {
