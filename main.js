@@ -10,7 +10,7 @@ async function 載入圖示() {
 	parent.document.querySelector('[rel="icon"]').href = svgtext2url(
 		`<svg viewBox="-50 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
 		<rect x="5" y="5" rx="15" ry="15" fill="#f5f5f5" width="290" height="390" />
-		${xml2text(document.querySelector('#中'))}
+		${xml2text(中)}
 		</svg>`
 	);
 }

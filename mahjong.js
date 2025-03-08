@@ -28,7 +28,7 @@ function 建立節點(i, j) {
 	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}"></g>`);
 	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
 	let see = b => rect.classList[b ? 'add' : 'remove']('see');
-	svg.append(text2svg(`<rect/>`), img, rect, text2svg(`<rect class="move"/>`), text2svg(`<rect class="move2"/>`));
+	svg.append(text2svg(`<rect/>`), img, rect, text2svg(`<rect class="move"/>`), text2svg(`<rect/>`));
 	牌區.append(svg);
 	return {
 		svg, lock, see,

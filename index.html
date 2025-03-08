@@ -10,7 +10,6 @@
 		body {
 			opacity: 0;
 			background-color: #000;
-			color: #fff;
 		}
 
 		iframe {
@@ -28,15 +27,14 @@
 	<script src="mylibrary.js"></script>
 	<script>
 		let w = 1140, h = 920;
-		let mx = 5, mn = 0.5, 單位 = 0.01;
+		let mx = 5, mn = 0.5;
 		function setfoundation() {
 			let fm = Math.min(window.innerWidth / w, window.innerHeight / h, mx);
 			fm = Math.max(fm, mn);
-			fm = Math.floor(fm / 單位) * 單位;
 			document.body.style.setProperty('--fm', fm);
 		}
 		window.onload = function () {
-			if (navigator.userAgent.search(/Mobi|Android|iPhone/i) != -1) mx = 5, mn = 0.25, 單位 = 0.01;
+			if (navigator.userAgent.search(/Mobi|Android|iPhone/i) != -1) mx = 5, mn = 0.25;
 			game.style.setProperty('--w', w);
 			game.style.setProperty('--h', h);
 			document.body.onresize = setfoundation;
