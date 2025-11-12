@@ -23,21 +23,19 @@ let 位掃描 = (位, cb) => range_nl(0, 位.length).some(i => range_nl(i + 1, �
 
 function 建立節點(i, j) {
 	let id = '無';
-	let img = text2svg(`<use transform="scale(0.2)"/>`);
-	let rect = text2svg(`<rect class="rect"/>`);
-	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}"></g>`);
+	let svg = text2svg(`<g style="--x:${j};--y:${i};" data-x="${j}" data-y="${i}"><rect/><use transform="scale(0.2)"/><rect class="rect"/><rect class="move"/><rect/></g>`);
+	let [, img, rect] = svg.querySelectorAll('*');
 	let lock = b => rect.classList[b ? 'add' : 'remove']('lock');
 	let see = b => rect.classList[b ? 'add' : 'remove']('see');
-	svg.append(text2svg(`<rect/>`), img, rect, text2svg(`<rect class="move"/>`), text2svg(`<rect/>`));
 	牌區.append(svg);
 	return {
 		svg, lock, see,
 		set id(_id) {
 			id = _id;
-			see(false);
-			lock(false);
 			img.setAttribute('href', `#${id}`);
 			svg.classList[id == '無' ? 'add' : 'remove']('hide');
+			lock(false);
+			see(false);
 		},
 		get id() { return id; }
 	};
@@ -300,7 +298,7 @@ let 選擇 = {
 	}
 };
 
-預設.append(text2svg(await loadfile('text', '麻將.svg')));
+預設.append(...text2svg(await loadfile('text', '麻將.svg')).querySelectorAll('&>*'));
 range_nl(0, 高度).forEach(i => { 節點[i] = []; range_nl(0, 寬度).forEach(j => 節點[i][j] = 建立節點(i, j)) });
 
 export default {
